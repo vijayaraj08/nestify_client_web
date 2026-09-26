@@ -72,7 +72,7 @@ export default function AuthImageCarousel() {
     <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full h-full min-h-[440px] lg:min-h-[490px] rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl border border-[#3D2C24] bg-[#231713] flex flex-col justify-between p-6 sm:p-8 select-none group"
+      className="relative w-full h-full min-h-[440px] lg:min-h-[490px] rounded-2xl lg:rounded-3xl overflow-hidden shadow-xl border border-slate-800 bg-slate-900 flex flex-col justify-between p-6 sm:p-8 select-none group"
     >
       {/* ── Background Slides with Smooth Crossfade ── */}
       {CAROUSEL_SLIDES.map((slide, idx) => (
@@ -97,14 +97,14 @@ export default function AuthImageCarousel() {
       <div className="relative z-10 flex items-center justify-between">
         {/* Brand Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-[#E5CBA8]">
+          <div className="w-8 h-8 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-[#818CF8]">
             <Sparkles size={16} />
           </div>
           <div>
             <span className="text-lg font-bold tracking-tight text-white font-serif leading-none block">
               Hostello
             </span>
-            <span className="text-[9px] uppercase tracking-widest text-[#D6BEA2] font-semibold">
+            <span className="text-[9px] uppercase tracking-widest text-indigo-200/80 font-semibold">
               LUXURY CO-LIVING
             </span>
           </div>
@@ -141,8 +141,8 @@ export default function AuthImageCarousel() {
 
       {/* ── Bottom Info & Tag ── */}
       <div className="relative z-10 mt-auto">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/50 border border-white/20 backdrop-blur-md text-[11px] text-[#E8D1B6] font-medium mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E5CBA8]" />
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/50 border border-white/20 backdrop-blur-md text-[11px] text-indigo-100 font-medium mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#818CF8]" />
           <span>{currentSlide.tag}</span>
         </div>
 
@@ -150,7 +150,7 @@ export default function AuthImageCarousel() {
           {currentSlide.title}
         </h3>
 
-        <p className="text-xs sm:text-sm text-[#D8C7B5] mt-1 leading-relaxed max-w-md drop-shadow line-clamp-2">
+        <p className="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed max-w-md drop-shadow line-clamp-2">
           {currentSlide.description}
         </p>
       </div>

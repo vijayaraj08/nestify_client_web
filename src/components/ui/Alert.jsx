@@ -4,8 +4,8 @@ import { useState } from 'react';
 const alertConfig = {
   info: {
     icon: Info,
-    container: 'bg-primary-50 border-primary-200 text-primary-800',
-    iconColor: 'text-primary-500',
+    container: 'bg-info-50 border-info-200 text-info-800',
+    iconColor: 'text-info-500',
   },
   success: {
     icon: CheckCircle,

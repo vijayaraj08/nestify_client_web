@@ -1,8 +1,14 @@
 import { useState, useCallback } from 'react';
-import { Mail, Lock, Eye, EyeOff, LogIn, KeyRound } from 'lucide-react';
-import { loginUser, DEMO_ACCOUNTS } from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
+import { useAuth } from '../../auth/AuthContext';
+import { getDefaultRouteForRole } from '../../auth/role.utils';
+import DemoCredentials from './DemoCredentials';
 
 export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -10,7 +16,6 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
-  const [showDemoSelector, setShowDemoSelector] = useState(false);
 
   const validate = useCallback(() => {
     const errs = {};
@@ -34,8 +39,13 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
 
     setLoading(true);
     try {
-      const result = await loginUser({ email: email.trim(), password });
-      onLoginSuccess?.(result);
+      const loggedInUser = await login({ email: email.trim(), password });
+      if (onLoginSuccess) {
+        onLoginSuccess({ user: loggedInUser });
+      } else {
+        const dest = getDefaultRouteForRole(loggedInUser.role);
+        navigate(dest, { replace: true });
+      }
     } catch (err) {
       setApiError(err.message || 'Invalid email or password. Please try again.');
     } finally {
@@ -51,12 +61,12 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-3.5 animate-fade-in">
+    <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
       {/* API Error Alert */}
       {apiError && (
         <div
           role="alert"
-          className="p-2.5 rounded-xl border border-red-200 bg-red-50 text-xs text-red-700 flex items-center gap-2 animate-fade-in"
+          className="p-2.5 rounded-xl border border-red-200/80 bg-red-50/90 backdrop-blur-md text-xs text-red-700 flex items-center gap-2 animate-fade-in shadow-sm"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
           <span>{apiError}</span>
@@ -65,11 +75,11 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
 
       {/* Username / Email Field */}
       <div>
-        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
           Username / Email
         </label>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             <Mail size={15} />
           </div>
           <input
@@ -80,13 +90,14 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
               if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
               if (apiError) setApiError('');
             }}
-            placeholder="e.g. resident@nestify.com"
+            placeholder="e.g. admin@hostello.com"
             disabled={loading}
             className={`
-              w-full rounded-xl border bg-white pl-10 pr-4 py-2.5 text-xs sm:text-sm text-stone-900
-              placeholder:text-stone-400 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-[#8B6238]/20 focus:border-[#8B6238]
-              ${errors.email ? 'border-red-400' : 'border-[#E2D5C8] hover:border-[#D0BFB0]'}
+              w-full rounded-xl border bg-white/70 backdrop-blur-md pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900
+              placeholder:text-slate-400 transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white
+              shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]
+              ${errors.email ? 'border-red-400 focus:ring-red-400/20' : 'border-white/80 hover:border-slate-300'}
             `}
           />
         </div>
@@ -98,22 +109,22 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
       {/* Password Field */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="block text-[11px] font-semibold text-stone-600">
+          <label className="block text-[11px] font-semibold text-slate-700">
             Password
           </label>
           <a
             href="#forgot"
             onClick={(e) => {
               e.preventDefault();
-              alert('Password reset link sent to your registered email or administrator.');
+              alert('Password reset instructions sent to registered email.');
             }}
-            className="text-[10px] font-medium text-stone-500 hover:text-[#8B6238] cursor-pointer"
+            className="text-[10px] font-medium text-slate-500 hover:text-indigo-600 cursor-pointer"
           >
             Forgot Password?
           </a>
         </div>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             <Lock size={15} />
           </div>
           <input
@@ -127,16 +138,18 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
             placeholder="Enter your password"
             disabled={loading}
             className={`
-              w-full rounded-xl border bg-white pl-10 pr-10 py-2.5 text-xs sm:text-sm text-stone-900
-              placeholder:text-stone-400 transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-[#8B6238]/20 focus:border-[#8B6238]
-              ${errors.password ? 'border-red-400' : 'border-[#E2D5C8] hover:border-[#D0BFB0]'}
+              w-full rounded-xl border bg-white/70 backdrop-blur-md pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900
+              placeholder:text-slate-400 transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white
+              shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]
+              ${errors.password ? 'border-red-400' : 'border-white/80 hover:border-slate-300'}
             `}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
@@ -153,9 +166,9 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-3.5 h-3.5 rounded border-[#D9C8B7] text-[#5C3E26] focus:ring-[#8B6238]/20 accent-[#5C3E26] cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-slate-300 bg-white/80 text-indigo-600 focus:ring-indigo-500/20 accent-indigo-600 cursor-pointer"
           />
-          <span className="text-[11px] text-stone-600 font-normal">
+          <span className="text-[11px] text-slate-600 font-normal">
             Remember me on this device
           </span>
         </label>
@@ -165,7 +178,7 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-md bg-[#5C3E26] hover:bg-[#4D331E] active:scale-[0.99] transition-all duration-200 cursor-pointer border border-[#48301D] flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-lg shadow-indigo-600/25 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 active:scale-[0.99] transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
       >
         {loading ? (
           <>
@@ -183,42 +196,22 @@ export default function SignInForm({ onLoginSuccess, onSwitchToSignUp }) {
         )}
       </button>
 
-      {/* Quick Demo Access Bar */}
-      <div className="pt-1">
-        <button
-          type="button"
-          onClick={() => setShowDemoSelector(!showDemoSelector)}
-          className="w-full flex items-center justify-center gap-1.5 text-[10px] text-stone-500 hover:text-[#5C3E26] cursor-pointer"
-        >
-          <KeyRound size={11} />
-          <span>{showDemoSelector ? 'Hide Demo Logins' : 'Quick Demo Logins (Admin / Resident)'}</span>
-        </button>
+      {/* Switch to Sign Up quick link */}
+      {onSwitchToSignUp && (
+        <p className="text-center text-[11px] text-slate-500 pt-0.5">
+          Don&apos;t have an account?{' '}
+          <button
+            type="button"
+            onClick={onSwitchToSignUp}
+            className="text-indigo-600 font-bold hover:underline cursor-pointer"
+          >
+            Create Account
+          </button>
+        </p>
+      )}
 
-        {showDemoSelector && (
-          <div className="grid grid-cols-2 gap-1.5 mt-2 p-2 rounded-xl bg-[#FAF7F2] border border-[#E8DCCF] animate-fade-in">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => handleDemoSelect(acc)}
-                className="text-left p-1.5 rounded-lg bg-white hover:bg-[#F4EBE0] border border-[#E5D5C5] text-[10px] transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-stone-800 block truncate">
-                    {acc.label}
-                  </span>
-                  <span className="text-[8px] px-1 rounded bg-[#FAF3EC] text-[#8B6238] font-semibold">
-                    {acc.role}
-                  </span>
-                </div>
-                <span className="text-stone-400 text-[9px] block font-mono mt-0.5 truncate">
-                  {acc.email}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Demo Accounts Helper */}
+      <DemoCredentials onSelectAccount={handleDemoSelect} />
     </form>
   );
 }

@@ -2,7 +2,7 @@ const badgeVariants = {
   success: 'bg-success-50 text-success-700 border border-success-200',
   warning: 'bg-warning-50 text-warning-700 border border-warning-200',
   danger: 'bg-danger-50 text-danger-700 border border-danger-200',
-  info: 'bg-primary-50 text-primary-700 border border-primary-200',
+  info: 'bg-info-50 text-info-700 border border-info-200',
   neutral: 'bg-slate-100 text-slate-700 border border-slate-200',
 };
 
@@ -64,7 +64,7 @@ export default function Badge({
             ${resolvedVariant === 'success' ? 'bg-success-500' : ''}
             ${resolvedVariant === 'warning' ? 'bg-warning-500' : ''}
             ${resolvedVariant === 'danger' ? 'bg-danger-500' : ''}
-            ${resolvedVariant === 'info' ? 'bg-primary-500' : ''}
+            ${resolvedVariant === 'info' ? 'bg-info-500' : ''}
             ${resolvedVariant === 'neutral' ? 'bg-slate-500' : ''}
           `}
         />

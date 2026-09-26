@@ -1,28 +1,22 @@
-import { useState } from 'react';
-import Login from './pages/Login';
-import { AppShell } from './components/layout';
-import DesignSystemPreview from './pages/DesignSystemPreview';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
+import AppRoutes from './routes/AppRoutes';
 
 /**
- * App — Root component.
+ * App — Root Application Component
  *
- * Currently uses a simple state-based page switch.
- * Once react-router is added, replace this with proper routing:
- *   /login          → Login
- *   /dashboard      → Dashboard
- *   /design-system  → DesignSystemPreview
+ * Configured with:
+ * - BrowserRouter for client-side routing
+ * - AuthProvider for RBAC & session state management
+ * - AppRoutes for role-protected route trees
  */
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
   return (
-    <AppShell>
-      <DesignSystemPreview />
-    </AppShell>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

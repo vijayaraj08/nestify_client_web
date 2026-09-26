@@ -7,7 +7,6 @@ import {
   Search,
   Mail,
   Eye,
-  EyeOff,
   Copy,
   MoreHorizontal,
   Filter,
@@ -94,63 +93,77 @@ export default function DesignSystemPreview() {
       >
         <Card>
           <ColorRow
-            label="Primary — Warm Espresso Brown"
+            label="Primary — Indigo"
             colors={[
-              { name: '50', className: 'bg-primary-50', hex: '#FAF6F1' },
-              { name: '100', className: 'bg-primary-100', hex: '#F0E6D9' },
-              { name: '200', className: 'bg-primary-200', hex: '#DFCBB0' },
-              { name: '300', className: 'bg-primary-300', hex: '#CEAE85' },
-              { name: '400', className: 'bg-primary-400', hex: '#BD9362' },
-              { name: '500', className: 'bg-primary-500', hex: '#A67B48' },
-              { name: '600', className: 'bg-primary-600', hex: '#8B6238' },
-              { name: '700', className: 'bg-primary-700', hex: '#704E2B' },
-              { name: '800', className: 'bg-primary-800', hex: '#5A3E23' },
-              { name: '900', className: 'bg-primary-900', hex: '#45301B' },
+              { name: '50', className: 'bg-primary-50', hex: '#EEF2FF' },
+              { name: '100', className: 'bg-primary-100', hex: '#E0E7FF' },
+              { name: '200', className: 'bg-primary-200', hex: '#C7D2FE' },
+              { name: '300', className: 'bg-primary-300', hex: '#A5B4FC' },
+              { name: '400', className: 'bg-primary-400', hex: '#818CF8' },
+              { name: '500', className: 'bg-primary-500', hex: '#6366F1' },
+              { name: '600', className: 'bg-primary-600', hex: '#4338CA' },
+              { name: '700', className: 'bg-primary-700', hex: '#3730A3' },
+              { name: '800', className: 'bg-primary-800', hex: '#312E81' },
+              { name: '900', className: 'bg-primary-900', hex: '#1E1B4B' },
             ]}
           />
           <ColorRow
-            label="Success — Emerald"
+            label="Secondary / Info — Blue"
             colors={[
-              { name: '50', className: 'bg-success-50', hex: '#ecfdf5' },
-              { name: '100', className: 'bg-success-100', hex: '#d1fae5' },
-              { name: '300', className: 'bg-success-300', hex: '#6ee7b7' },
-              { name: '500', className: 'bg-success-500', hex: '#10b981' },
-              { name: '700', className: 'bg-success-700', hex: '#047857' },
+              { name: '50', className: 'bg-info-50', hex: '#EFF6FF' },
+              { name: '100', className: 'bg-info-100', hex: '#DBEAFE' },
+              { name: '300', className: 'bg-info-300', hex: '#93C5FD' },
+              { name: '500', className: 'bg-info-500', hex: '#3B82F6' },
+              { name: '600', className: 'bg-info-600', hex: '#2563EB' },
+              { name: '700', className: 'bg-info-700', hex: '#1D4ED8' },
+            ]}
+          />
+          <ColorRow
+            label="Success — Green"
+            colors={[
+              { name: '50', className: 'bg-success-50', hex: '#F0FDF4' },
+              { name: '100', className: 'bg-success-100', hex: '#DCFCE7' },
+              { name: '300', className: 'bg-success-300', hex: '#86EFAC' },
+              { name: '500', className: 'bg-success-500', hex: '#22C55E' },
+              { name: '600', className: 'bg-success-600', hex: '#16A34A' },
+              { name: '700', className: 'bg-success-700', hex: '#15803D' },
             ]}
           />
           <ColorRow
             label="Warning — Amber"
             colors={[
-              { name: '50', className: 'bg-warning-50', hex: '#fffbeb' },
-              { name: '100', className: 'bg-warning-100', hex: '#fef3c7' },
-              { name: '300', className: 'bg-warning-300', hex: '#fcd34d' },
-              { name: '500', className: 'bg-warning-500', hex: '#f59e0b' },
-              { name: '700', className: 'bg-warning-700', hex: '#b45309' },
+              { name: '50', className: 'bg-warning-50', hex: '#FFFBEB' },
+              { name: '100', className: 'bg-warning-100', hex: '#FEF3C7' },
+              { name: '300', className: 'bg-warning-300', hex: '#FCD34D' },
+              { name: '500', className: 'bg-warning-500', hex: '#F59E0B' },
+              { name: '600', className: 'bg-warning-600', hex: '#D97706' },
+              { name: '700', className: 'bg-warning-700', hex: '#B45309' },
             ]}
           />
           <ColorRow
-            label="Danger — Rose"
+            label="Danger / Error — Red"
             colors={[
-              { name: '50', className: 'bg-danger-50', hex: '#fff1f2' },
-              { name: '100', className: 'bg-danger-100', hex: '#ffe4e6' },
-              { name: '300', className: 'bg-danger-300', hex: '#fda4af' },
-              { name: '500', className: 'bg-danger-500', hex: '#f43f5e' },
-              { name: '700', className: 'bg-danger-700', hex: '#be123c' },
+              { name: '50', className: 'bg-danger-50', hex: '#FEF2F2' },
+              { name: '100', className: 'bg-danger-100', hex: '#FEE2E2' },
+              { name: '300', className: 'bg-danger-300', hex: '#FCA5A5' },
+              { name: '500', className: 'bg-danger-500', hex: '#EF4444' },
+              { name: '600', className: 'bg-danger-600', hex: '#DC2626' },
+              { name: '700', className: 'bg-danger-700', hex: '#B91C1C' },
             ]}
           />
           <ColorRow
             label="Neutrals — Slate"
             colors={[
-              { name: '50', className: 'bg-slate-50', hex: '#f8fafc' },
-              { name: '100', className: 'bg-slate-100', hex: '#f1f5f9' },
-              { name: '200', className: 'bg-slate-200', hex: '#e2e8f0' },
-              { name: '300', className: 'bg-slate-300', hex: '#cbd5e1' },
-              { name: '400', className: 'bg-slate-400', hex: '#94a3b8' },
-              { name: '500', className: 'bg-slate-500', hex: '#64748b' },
+              { name: '50', className: 'bg-slate-50', hex: '#F8FAFC' },
+              { name: '100', className: 'bg-slate-100', hex: '#F1F5F9' },
+              { name: '200', className: 'bg-slate-200', hex: '#E2E8F0' },
+              { name: '300', className: 'bg-slate-300', hex: '#CBD5E1' },
+              { name: '400', className: 'bg-slate-400', hex: '#94A3B8' },
+              { name: '500', className: 'bg-slate-500', hex: '#64748B' },
               { name: '600', className: 'bg-slate-600', hex: '#475569' },
               { name: '700', className: 'bg-slate-700', hex: '#334155' },
-              { name: '800', className: 'bg-slate-800', hex: '#1e293b' },
-              { name: '900', className: 'bg-slate-900', hex: '#0f172a' },
+              { name: '800', className: 'bg-slate-800', hex: '#1E293B' },
+              { name: '900', className: 'bg-slate-900', hex: '#0F172A' },
             ]}
           />
         </Card>

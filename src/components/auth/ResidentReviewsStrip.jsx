@@ -60,15 +60,15 @@ export default function ResidentReviewsStrip() {
     <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="w-full bg-[#140C08]/95 backdrop-blur-sm rounded-2xl lg:rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#3A261A] shadow-xl relative overflow-hidden select-none"
+      className="w-full bg-slate-900/95 backdrop-blur-sm rounded-2xl lg:rounded-3xl p-5 sm:p-6 lg:p-7 border border-slate-800 shadow-xl relative overflow-hidden select-none"
     >
-      {/* Subtle gold line flourishes in corners */}
-      <div className="absolute top-2 left-3 w-12 h-6 border-t border-l border-[#8B6238]/30 pointer-events-none rounded-tl" />
-      <div className="absolute top-2 right-3 w-12 h-6 border-t border-r border-[#8B6238]/30 pointer-events-none rounded-tr" />
+      {/* Subtle line flourishes in corners */}
+      <div className="absolute top-2 left-3 w-12 h-6 border-t border-l border-indigo-500/20 pointer-events-none rounded-tl" />
+      <div className="absolute top-2 right-3 w-12 h-6 border-t border-r border-indigo-500/20 pointer-events-none rounded-tr" />
 
       {/* ── Title ── */}
       <div className="text-center mb-3">
-        <h3 className="text-base sm:text-lg font-serif font-medium text-[#F0DFCD] tracking-wide">
+        <h3 className="text-base sm:text-lg font-serif font-medium text-slate-100 tracking-wide">
           What Our Residents Say
         </h3>
       </div>
@@ -83,10 +83,10 @@ export default function ResidentReviewsStrip() {
               onClick={() => setActiveIndex(idx)}
               className={`
                 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all duration-300
-                bg-[#1E130D]/90 border
+                border
                 ${isActive
-                  ? 'border-[#D4B28C] shadow-lg shadow-black/60 scale-[1.02] bg-[#281810]'
-                  : 'border-[#3D291D] opacity-80 hover:opacity-100 hover:border-[#6B4B36]'
+                  ? 'border-[#6366F1] shadow-lg shadow-black/40 scale-[1.02] bg-slate-800'
+                  : 'border-slate-800 bg-slate-800/60 opacity-80 hover:opacity-100 hover:border-slate-700'
                 }
               `}
             >
@@ -99,14 +99,14 @@ export default function ResidentReviewsStrip() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="text-xs font-semibold text-[#F7EDE2] leading-snug line-clamp-2">
+                <p className="text-xs font-semibold text-slate-100 leading-snug line-clamp-2">
                   {review.quote}
                 </p>
               </div>
 
               {/* Author & Room Footer */}
-              <div className="flex items-center justify-between text-[10px] text-[#A69383] mt-2 pt-1.5 border-t border-white/10">
-                <span className="font-semibold text-[#E5CBA8]">{review.author}</span>
+              <div className="flex items-center justify-between text-[10px] text-slate-400 mt-2 pt-1.5 border-t border-white/10">
+                <span className="font-semibold text-indigo-300">{review.author}</span>
                 <span className="font-normal opacity-80">{review.room}</span>
               </div>
             </div>
@@ -115,9 +115,9 @@ export default function ResidentReviewsStrip() {
       </div>
 
       {/* ── Bottom Progress Bar ── */}
-      <div className="w-full bg-[#2A1B13] h-1 rounded-full mt-4 overflow-hidden relative">
+      <div className="w-full bg-slate-800 h-1 rounded-full mt-4 overflow-hidden relative">
         <div
-          className="h-full bg-gradient-to-r from-[#8B6238] via-[#D4B28C] to-[#FAF3EC] rounded-full transition-all duration-300 ease-out"
+          className="h-full bg-gradient-to-r from-[#4338CA] via-[#6366F1] to-[#EEF2FF] rounded-full transition-all duration-300 ease-out"
           style={{
             width: `${((activeIndex + 1) / REVIEWS.length) * 100}%`,
           }}
