@@ -254,14 +254,23 @@ export default function AppLayout({ role: layoutRole, children }) {
                       type="button"
                       onClick={() => {
                         setUserDropdownOpen(false);
-                        if (effectiveRole === 'END_USER') navigate('/user/profile');
-                        else if (effectiveRole === 'TENANT') navigate('/tenant/settings');
-                        else navigate('/admin/settings');
+                        navigate('/profile');
                       }}
                       className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                     >
                       <UserIcon size={16} className="text-slate-400" />
-                      <span>Profile & Settings</span>
+                      <span>My Profile</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        navigate('/settings');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      <Shield size={16} className="text-slate-400" />
+                      <span>Account Settings</span>
                     </button>
                   </div>
 

@@ -3,12 +3,15 @@ import { useAuth } from '../auth/AuthContext';
 import { ROLES } from '../constants/roles';
 import { getDefaultRouteForRole } from '../auth/role.utils';
 import RoleRoute from '../auth/RoleRoute';
+import ProtectedRoute from '../auth/ProtectedRoute';
 import { AppLayout } from '../layouts';
 
 // Pages
 import Login from '../pages/Login';
 import Unauthorized from '../pages/Unauthorized';
 import Dashboard from '../pages/Dashboard';
+import Profile from '../pages/Profile';
+import Settings from '../pages/Settings';
 import GenericPage from '../pages/GenericPage';
 import DesignSystemPreview from '../pages/DesignSystemPreview';
 
@@ -66,6 +69,30 @@ export default function AppRoutes() {
       <Route path="/design-system" element={<DesignSystemPreview />} />
 
       {/* ========================================================= */}
+      {/* COMMON TOP-LEVEL PROTECTED ROUTES                         */}
+      {/* ========================================================= */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Profile />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Settings />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ========================================================= */}
       {/* 1. SUPER ADMIN ROUTES (/admin/*)                          */}
       {/* ========================================================= */}
       <Route
@@ -92,7 +119,8 @@ export default function AppRoutes() {
         <Route path="subscriptions" element={<GenericPage title="Subscriptions & Billing" />} />
         <Route path="referrals" element={<GenericPage title="Referrals & Affiliates" />} />
         <Route path="audit-logs" element={<GenericPage title="System Audit Logs" />} />
-        <Route path="settings" element={<GenericPage title="Platform Settings" />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Route>
 
@@ -120,7 +148,8 @@ export default function AppRoutes() {
         <Route path="staff" element={<GenericPage title="Hostel Staff & Wardens" />} />
         <Route path="inventory" element={<GenericPage title="Hostel Inventory & Assets" />} />
         <Route path="food-menu" element={<GenericPage title="Mess & Food Menu" />} />
-        <Route path="settings" element={<GenericPage title="Property Settings" />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/tenant/dashboard" replace />} />
       </Route>
 
@@ -143,7 +172,8 @@ export default function AppRoutes() {
         <Route path="complaints" element={<GenericPage title="Complaints & Helpdesk" />} />
         <Route path="documents" element={<GenericPage title="Documents & Agreement" />} />
         <Route path="notifications" element={<GenericPage title="Personal Notifications" />} />
-        <Route path="profile" element={<GenericPage title="Profile & Settings" />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
       </Route>
 

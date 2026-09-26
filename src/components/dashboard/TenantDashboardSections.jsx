@@ -7,10 +7,9 @@ import {
   Plus,
   CheckCircle2,
 } from 'lucide-react';
-import DashboardHero from './DashboardHero';
 import KpiCard from './KpiCard';
 
-export default function TenantDashboardSections({ user }) {
+export default function TenantDashboardSections() {
   const stats = [
     {
       title: 'Total Bed Capacity',
@@ -47,47 +46,38 @@ export default function TenantDashboardSections({ user }) {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Reusable Hero Banner */}
-      <DashboardHero
-        badgeText="Hostel Property Management"
-        badgeVariant="emerald"
-        subtext="Sunshine Grand Hostel"
-        title={`Welcome back, ${user?.name || 'Property Manager'}`}
-        description="Monitor room occupancy, resident check-ins, rent collection, and maintenance issues."
-        actionButton={
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
-          >
-            <Plus size={18} />
-            <span>New Booking</span>
-          </button>
-        }
-      />
-
-      {/* KPI Cards Grid */}
+    <div className="w-full space-y-4 pb-8">
+      {/* ── KPI Cards Grid (Starts directly at top of page) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <KpiCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* Grid: Room Status & Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Grid: Room Status & Tasks ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left 2 Cols: Recent Check-ins & Bookings */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 flex-wrap gap-2">
             <div>
               <h2 className="text-base font-bold text-slate-900">Recent Check-ins & Bookings</h2>
-              <p className="text-xs text-slate-500">Residents assigned to beds recently</p>
+              <p className="text-xs text-slate-500 mt-0.5">Residents assigned to beds recently</p>
             </div>
-            <button
-              type="button"
-              className="text-xs font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 cursor-pointer"
-            >
-              View All <ArrowUpRight size={14} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus size={14} />
+                <span>New Booking</span>
+              </button>
+              <button
+                type="button"
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 cursor-pointer pl-1"
+              >
+                View All <ArrowUpRight size={14} />
+              </button>
+            </div>
           </div>
 
           <div className="divide-y divide-slate-100 mt-2">
@@ -127,7 +117,7 @@ export default function TenantDashboardSections({ user }) {
         </div>
 
         {/* Right 1 Col: Quick Property Tasks */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h2 className="text-base font-bold text-slate-900">Today's Tasks</h2>
@@ -140,7 +130,7 @@ export default function TenantDashboardSections({ user }) {
                 { title: 'Verify KYC documents for 2 new tenants', tag: 'Verification', color: 'text-amber-600 bg-amber-50' },
                 { title: 'Send rent reminders for Block B', tag: 'Finance', color: 'text-indigo-600 bg-indigo-50' },
               ].map((task, i) => (
-                <div key={i} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 flex items-start gap-2.5">
+                <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 flex items-start gap-2.5">
                   <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-slate-800">{task.title}</p>
@@ -153,7 +143,7 @@ export default function TenantDashboardSections({ user }) {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500">
+          <div className="mt-6 pt-3.5 border-t border-slate-100 text-[11px] text-slate-400">
             Hostel ID: HST-9021 • Floor 1 to 4 Active
           </div>
         </div>
