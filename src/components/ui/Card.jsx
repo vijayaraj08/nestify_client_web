@@ -16,9 +16,9 @@ export default function Card({
   return (
     <div
       className={`
-        bg-white rounded-lg
-        ${border ? 'border border-slate-200' : ''}
-        ${hover ? 'hover:shadow-md hover:border-slate-300 transition-shadow duration-200 cursor-pointer' : ''}
+        bg-white dark:bg-slate-900 rounded-xl
+        ${border ? 'border border-slate-200/80 dark:border-slate-800' : ''}
+        ${hover ? 'hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 cursor-pointer' : ''}
         ${paddings[padding]}
         ${className}
       `}
@@ -39,7 +39,7 @@ function CardHeader({ children, className = '' }) {
 
 function CardTitle({ children, className = '' }) {
   return (
-    <h3 className={`text-base font-semibold text-slate-900 ${className}`}>
+    <h3 className={`text-base font-semibold text-slate-900 dark:text-white ${className}`}>
       {children}
     </h3>
   );
@@ -47,7 +47,7 @@ function CardTitle({ children, className = '' }) {
 
 function CardDescription({ children, className = '' }) {
   return (
-    <p className={`text-sm text-slate-500 mt-1 ${className}`}>
+    <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 ${className}`}>
       {children}
     </p>
   );
@@ -59,7 +59,7 @@ function CardContent({ children, className = '' }) {
 
 function CardFooter({ children, className = '' }) {
   return (
-    <div className={`mt-4 pt-4 border-t border-slate-100 flex items-center gap-3 ${className}`}>
+    <div className={`mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3 ${className}`}>
       {children}
     </div>
   );

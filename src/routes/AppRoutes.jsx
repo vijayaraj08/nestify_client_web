@@ -14,6 +14,8 @@ import Profile from '../pages/Profile';
 import Settings from '../pages/Settings';
 import GenericPage from '../pages/GenericPage';
 import DesignSystemPreview from '../pages/DesignSystemPreview';
+import PlansManagement from '../pages/admin/PlansManagement';
+import AnalyticsReports from '../pages/admin/AnalyticsReports';
 
 /**
  * Root Redirection Handler for '/'
@@ -114,9 +116,10 @@ export default function AppRoutes() {
         <Route path="finance" element={<GenericPage title="Payments & Finance" />} />
         <Route path="approvals" element={<GenericPage title="KYC & Approvals" />} />
         <Route path="compliance" element={<GenericPage title="Compliance & Legal" />} />
-        <Route path="reports" element={<GenericPage title="Analytics & Reports" />} />
+        <Route path="reports" element={<AnalyticsReports />} />
         <Route path="notifications" element={<GenericPage title="Platform Notifications" />} />
-        <Route path="subscriptions" element={<GenericPage title="Subscriptions & Billing" />} />
+        <Route path="subscriptions" element={<PlansManagement />} />
+        <Route path="plans" element={<PlansManagement />} />
         <Route path="referrals" element={<GenericPage title="Referrals & Affiliates" />} />
         <Route path="audit-logs" element={<GenericPage title="System Audit Logs" />} />
         <Route path="profile" element={<Profile />} />
@@ -143,6 +146,8 @@ export default function AppRoutes() {
         <Route path="bookings" element={<GenericPage title="Resident Bookings" />} />
         <Route path="residents" element={<GenericPage title="Resident Roster" />} />
         <Route path="payments" element={<GenericPage title="Payments & Invoices" />} />
+        <Route path="reports" element={<AnalyticsReports />} />
+        <Route path="analytics" element={<AnalyticsReports />} />
         <Route path="complaints" element={<GenericPage title="Complaints & Issues" />} />
         <Route path="maintenance" element={<GenericPage title="Maintenance Tasks" />} />
         <Route path="staff" element={<GenericPage title="Hostel Staff & Wardens" />} />

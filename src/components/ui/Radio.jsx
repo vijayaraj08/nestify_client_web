@@ -13,8 +13,9 @@ const Radio = forwardRef(
           name={name}
           disabled={disabled}
           className={`
-            w-4 h-4 border border-slate-300
-            text-primary-600
+            w-4 h-4 border border-slate-300 dark:border-slate-700
+            text-primary-600 dark:text-primary-500
+            bg-white dark:bg-slate-900
             focus:ring-2 focus:ring-primary-500/20 focus:ring-offset-0
             disabled:opacity-50 disabled:cursor-not-allowed
             accent-primary-600
@@ -26,7 +27,9 @@ const Radio = forwardRef(
           <label
             htmlFor={radioId}
             className={`text-sm cursor-pointer select-none ${
-              disabled ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'
+              disabled
+                ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                : 'text-slate-700 dark:text-slate-300'
             }`}
           >
             {label}

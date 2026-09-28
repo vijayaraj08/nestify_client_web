@@ -15,7 +15,7 @@ export default function Skeleton({
   return (
     <div
       className={`
-        bg-slate-200 animate-pulse-soft
+        bg-slate-200 dark:bg-slate-800 animate-pulse-soft
         ${roundedMap[rounded]}
         ${className}
       `}
@@ -45,7 +45,7 @@ Skeleton.Text = function SkeletonText({ lines = 3, className = '' }) {
 
 Skeleton.Card = function SkeletonCard({ className = '' }) {
   return (
-    <div className={`p-5 border border-slate-200 rounded-lg space-y-4 ${className}`}>
+    <div className={`p-5 border border-slate-200 dark:border-slate-800 rounded-lg space-y-4 ${className}`}>
       <Skeleton height="1rem" width="40%" />
       <Skeleton.Text lines={2} />
       <div className="flex gap-3">

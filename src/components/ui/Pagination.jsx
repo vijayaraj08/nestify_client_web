@@ -40,9 +40,9 @@ export default function Pagination({
       aria-label="Pagination"
       className={`flex items-center justify-between gap-4 ${className}`}
     >
-      <p className="text-sm text-slate-500">
-        Page <span className="font-medium text-slate-700">{currentPage}</span> of{' '}
-        <span className="font-medium text-slate-700">{totalPages}</span>
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        Page <span className="font-medium text-slate-700 dark:text-slate-200">{currentPage}</span> of{' '}
+        <span className="font-medium text-slate-700 dark:text-slate-200">{totalPages}</span>
       </p>
 
       <div className="flex items-center gap-1">
@@ -51,7 +51,7 @@ export default function Pagination({
           type="button"
           disabled={currentPage <= 1}
           onClick={() => onPageChange?.(currentPage - 1)}
-          className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           aria-label="Previous page"
         >
           <ChevronLeft size={16} />
@@ -61,7 +61,7 @@ export default function Pagination({
         {pages.map((page, idx) => {
           if (page === '...') {
             return (
-              <span key={`ellipsis-${idx}`} className="px-1 text-sm text-slate-400">
+              <span key={`ellipsis-${idx}`} className="px-1 text-sm text-slate-400 dark:text-slate-600">
                 ...
               </span>
             );
@@ -76,8 +76,8 @@ export default function Pagination({
                 min-w-[2rem] h-8 px-2 rounded-md text-sm font-medium
                 transition-colors duration-150 cursor-pointer
                 ${currentPage === page
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-primary-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }
               `}
               aria-current={currentPage === page ? 'page' : undefined}
@@ -92,7 +92,7 @@ export default function Pagination({
           type="button"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange?.(currentPage + 1)}
-          className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           aria-label="Next page"
         >
           <ChevronRight size={16} />

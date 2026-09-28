@@ -39,7 +39,8 @@ export default function Tooltip({ children, content, position = 'top', delay = 3
           className={`
             absolute z-50 ${positions[position]}
             px-2.5 py-1.5 text-xs font-medium
-            text-white bg-slate-800 rounded-md
+            text-white bg-slate-900 dark:bg-slate-800 rounded-md
+            border border-slate-700/80 shadow-lg
             whitespace-nowrap pointer-events-none
             animate-fade-in
           `}

@@ -59,29 +59,41 @@ export default function Profile() {
       if (section === 'personal') {
         return { ...prev, [field]: value };
       }
-      if (section === 'address') {
-        return { ...prev, address: { ...prev.address, [field]: value } };
-      }
-      if (section === 'business') {
-        return { ...prev, business: { ...prev.business, [field]: value } };
-      }
-      if (section === 'businessAddress') {
+      if (section === 'emergencyContact') {
         return {
           ...prev,
-          business: {
-            ...prev.business,
-            address: { ...prev.business?.address, [field]: value },
+          emergencyContact: { ...prev.emergencyContact, [field]: value },
+        };
+      }
+      if (section === 'ownerProfile') {
+        return {
+          ...prev,
+          ownerProfile: { ...prev.ownerProfile, [field]: value },
+        };
+      }
+      if (section === 'residentRoommate') {
+        return {
+          ...prev,
+          residentProfile: {
+            ...prev.residentProfile,
+            roommatePreferences: {
+              ...prev.residentProfile?.roommatePreferences,
+              [field]: value,
+            },
           },
         };
       }
-      if (section === 'businessPhotos') {
+      if (section === 'residentMess') {
         return {
           ...prev,
-          business: { ...prev.business, photos: value },
+          residentProfile: {
+            ...prev.residentProfile,
+            messSubscription: {
+              ...prev.residentProfile?.messSubscription,
+              [field]: value,
+            },
+          },
         };
-      }
-      if (section === 'resident') {
-        return { ...prev, resident: { ...prev.resident, [field]: value } };
       }
       return prev;
     });
@@ -120,13 +132,12 @@ export default function Profile() {
       setIsEditing(false);
       setSuccessMessage('Profile updated successfully!');
 
-      // Update active user in AuthContext (updates Navbar avatar and name instantly)
+      // Update active user in AuthContext
       refreshUser?.({
         name: `${saved.firstName.trim()} ${saved.lastName.trim()}`,
         profileImage: saved.profilePhoto,
       });
 
-      // Clear success feedback after 4 seconds
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err) {
       setError(err.message || 'Failed to save changes. Please try again.');
@@ -146,22 +157,22 @@ export default function Profile() {
     <div className="w-full space-y-4 pb-8">
       {/* ── Alerts Feedback ── */}
       {successMessage && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs sm:text-sm flex items-center gap-2 animate-in fade-in shadow-2xs">
-          <Check size={18} className="text-emerald-600 shrink-0" />
+        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-emerald-800 dark:text-emerald-200 text-xs sm:text-sm flex items-center gap-2 animate-in fade-in shadow-2xs">
+          <Check size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span className="font-medium">{successMessage}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs sm:text-sm flex items-center gap-2 animate-in fade-in shadow-2xs">
-          <AlertCircle size={18} className="text-rose-600 shrink-0" />
+        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-center gap-2 animate-in fade-in shadow-2xs">
+          <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
           <span className="font-medium">{error}</span>
         </div>
       )}
 
       {/* ── Main Responsive Grid Layout (Horizontal Split) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left Column: Avatar Photo & Identity Summary Card (4 cols on lg, 3 cols on xl) */}
+        {/* Left Column: Avatar Photo & Identity Summary Card */}
         <div className="lg:col-span-4 xl:col-span-3">
           <ProfilePhoto
             photoUrl={formData?.profilePhoto}
@@ -179,9 +190,9 @@ export default function Profile() {
           />
         </div>
 
-        {/* Right Column: Personal Information & Role Details (8 cols on lg, 9 cols on xl) */}
+        {/* Right Column: Personal Information & Role Details */}
         <div className="lg:col-span-8 xl:col-span-9 space-y-4">
-          {/* Common Personal Information Card */}
+          {/* Common Personal Information & Emergency Contact Card */}
           <PersonalInformation
             data={formData}
             isEditing={isEditing}
@@ -189,8 +200,8 @@ export default function Profile() {
             onChange={handleFieldChange}
           />
 
-          {/* Role-Specific: Tenant Business Information */}
-          {role === ROLES.TENANT && (
+          {/* Role-Specific: Owner / Tenant Business & License Information */}
+          {(role === ROLES.TENANT || role === ROLES.OWNER) && (
             <TenantBusinessInformation
               data={formData}
               isEditing={isEditing}
@@ -198,8 +209,8 @@ export default function Profile() {
             />
           )}
 
-          {/* Role-Specific: End User Information */}
-          {role === ROLES.END_USER && (
+          {/* Role-Specific: Resident Room & Roommate Preferences Information */}
+          {(role === ROLES.END_USER || role === ROLES.RESIDENT) && (
             <EndUserInformation
               data={formData}
               isEditing={isEditing}

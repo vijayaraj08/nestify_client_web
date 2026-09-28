@@ -1,331 +1,199 @@
-import { useState, useRef } from 'react';
-import { Building2, Plus, Trash2, MapPin, Phone, Mail, FileText, Image as ImageIcon } from 'lucide-react';
-import { uploadProfilePhoto } from '../../services/profileService';
+import { Building2, FileText, CheckCircle2, Clock, KeyRound, Wallet } from 'lucide-react';
 
 export default function TenantBusinessInformation({
   data,
   isEditing = false,
   onChange,
 }) {
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [photoError, setPhotoError] = useState('');
-  const photoInputRef = useRef(null);
-
-  const business = data?.business || {};
-  const businessAddress = business.address || {};
-  const photos = business.photos || [];
+  const owner = data?.ownerProfile || {};
 
   const handleFieldChange = (field, value) => {
-    onChange?.('business', field, value);
+    onChange?.('ownerProfile', field, value);
   };
 
-  const handleAddressChange = (field, value) => {
-    onChange?.('businessAddress', field, value);
-  };
-
-  const handleAddPhoto = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setPhotoError('');
-    setUploadingPhoto(true);
-
-    try {
-      const dataUrl = await uploadProfilePhoto(file);
-      const updatedPhotos = [...photos, dataUrl];
-      onChange?.('businessPhotos', 'photos', updatedPhotos);
-    } catch (err) {
-      setPhotoError(err.message || 'Failed to upload business photo.');
-    } finally {
-      setUploadingPhoto(false);
-      if (photoInputRef.current) photoInputRef.current.value = '';
+  const getApprovalBadge = (status) => {
+    switch (status) {
+      case 'approved':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800 px-2.5 py-1 rounded-full">
+            <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-400" /> Platform Approved
+          </span>
+        );
+      case 'pending':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800 px-2.5 py-1 rounded-full">
+            <Clock size={12} className="text-amber-600 dark:text-amber-400" /> Under Moderation
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full capitalize">
+            {status || 'Pending'}
+          </span>
+        );
     }
   };
 
-  const handleRemovePhoto = (indexToRemove) => {
-    const updatedPhotos = photos.filter((_, idx) => idx !== indexToRemove);
-    onChange?.('businessPhotos', 'photos', updatedPhotos);
+  const getLicenseBadge = (status) => {
+    switch (status) {
+      case 'active':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800 px-2.5 py-1 rounded-full">
+            <KeyRound size={12} className="text-indigo-600 dark:text-indigo-400" /> Active License
+          </span>
+        );
+      case 'trial':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 px-2.5 py-1 rounded-full">
+            <KeyRound size={12} className="text-blue-600 dark:text-blue-400" /> 3-Day Free Trial
+          </span>
+        );
+      case 'expired':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border border-rose-200/60 dark:border-rose-800 px-2.5 py-1 rounded-full">
+            Expired
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full capitalize">
+            {status || 'None'}
+          </span>
+        );
+    }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Building2 size={18} className="text-emerald-600" />
-            Hostel & Business Entity
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Building2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+            Hostel & Business Entity Details
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Commercial details, registered address, and property gallery.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Commercial registration, tax credentials, and platform license status.
           </p>
         </div>
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
-          Tenant Scope
-        </span>
+        <div className="flex items-center gap-2">
+          {getLicenseBadge(owner?.licenseStatus)}
+          {getApprovalBadge(owner?.approvalStatus)}
+        </div>
       </div>
 
       {isEditing ? (
-        /* ── Edit Mode Form ── */
-        <div className="space-y-5">
-          {/* Row 1: Business Name & Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Business / Property Name <span className="text-rose-500">*</span>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Business / Entity Name <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
-                value={business.businessName || ''}
+                value={owner?.businessName || ''}
                 onChange={(e) => handleFieldChange('businessName', e.target.value)}
-                placeholder="e.g. Sunshine Grand Hostels"
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all"
+                placeholder="e.g. Grand Oak Living Suites"
+                className="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Business Entity Type
               </label>
-              <input
-                type="text"
-                value={business.businessType || ''}
+              <select
+                value={owner?.businessType || 'individual'}
                 onChange={(e) => handleFieldChange('businessType', e.target.value)}
-                placeholder="e.g. Co-Living / PG Management"
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all"
-              />
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-slate-100 cursor-pointer"
+              >
+                <option value="individual" className="bg-white dark:bg-slate-900">Individual / Proprietorship</option>
+                <option value="partnership" className="bg-white dark:bg-slate-900">Partnership Firm</option>
+                <option value="private_limited" className="bg-white dark:bg-slate-900">Private Limited (Pvt Ltd)</option>
+                <option value="llp" className="bg-white dark:bg-slate-900">Limited Liability Partnership (LLP)</option>
+              </select>
             </div>
           </div>
 
-          {/* Row 2: Contact Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Business Email
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                PAN Number
               </label>
               <div className="relative">
-                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <FileText size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
-                  type="email"
-                  value={business.businessEmail || ''}
-                  onChange={(e) => handleFieldChange('businessEmail', e.target.value)}
-                  placeholder="contact@hostel.com"
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Business Phone
-              </label>
-              <div className="relative">
-                <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="tel"
-                  value={business.businessPhone || ''}
-                  onChange={(e) => handleFieldChange('businessPhone', e.target.value)}
-                  placeholder="+91 98765 43210"
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white"
+                  type="text"
+                  value={owner?.panNumber || ''}
+                  onChange={(e) => handleFieldChange('panNumber', e.target.value.toUpperCase())}
+                  placeholder="e.g. AAACT1234F"
+                  maxLength={10}
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Registration / GSTIN No.
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                GSTIN Number
               </label>
               <div className="relative">
-                <FileText size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <FileText size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
-                  value={business.registrationNo || ''}
-                  onChange={(e) => handleFieldChange('registrationNo', e.target.value)}
-                  placeholder="GSTIN / Trade License"
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white"
+                  value={owner?.gstin || ''}
+                  onChange={(e) => handleFieldChange('gstin', e.target.value.toUpperCase())}
+                  placeholder="e.g. 29AAACT1234F1Z5"
+                  maxLength={15}
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
-          </div>
-
-          {/* Row 3: Commercial Address */}
-          <div className="pt-2 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-              <MapPin size={14} className="text-emerald-600" />
-              Commercial Property Address
-            </h4>
-
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={businessAddress.line1 || ''}
-                onChange={(e) => handleAddressChange('line1', e.target.value)}
-                placeholder="Plot/Building No, Road Name"
-                className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white"
-              />
-              <input
-                type="text"
-                value={businessAddress.line2 || ''}
-                onChange={(e) => handleAddressChange('line2', e.target.value)}
-                placeholder="Area, Landmark"
-                className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white"
-              />
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <input
-                  type="text"
-                  value={businessAddress.city || ''}
-                  onChange={(e) => handleAddressChange('city', e.target.value)}
-                  placeholder="City"
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl"
-                />
-                <input
-                  type="text"
-                  value={businessAddress.state || ''}
-                  onChange={(e) => handleAddressChange('state', e.target.value)}
-                  placeholder="State"
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl"
-                />
-                <input
-                  type="text"
-                  value={businessAddress.postalCode || ''}
-                  onChange={(e) => handleAddressChange('postalCode', e.target.value)}
-                  placeholder="Postal Code"
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl"
-                />
-                <input
-                  type="text"
-                  value={businessAddress.country || 'India'}
-                  onChange={(e) => handleAddressChange('country', e.target.value)}
-                  placeholder="Country"
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Row 4: Property & Business Photos Gallery */}
-          <div className="pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <ImageIcon size={14} className="text-emerald-600" />
-                  Business & Hostel Photos
-                </h4>
-                <p className="text-[11px] text-slate-400">
-                  Upload images of hostel rooms, façade, reception, and amenities.
-                </p>
-              </div>
-
-              <div>
-                <input
-                  ref={photoInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleAddPhoto}
-                  className="hidden"
-                  disabled={uploadingPhoto}
-                />
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  disabled={uploadingPhoto}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  <Plus size={14} />
-                  <span>Add Photo</span>
-                </button>
-              </div>
-            </div>
-
-            {photoError && <p className="text-xs text-rose-500 mb-2">{photoError}</p>}
-
-            {photos.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {photos.map((url, idx) => (
-                  <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
-                    <img src={url} alt={`Business ${idx + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhoto(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 bg-slate-900/70 hover:bg-rose-600 text-white rounded-md transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                      aria-label="Remove photo"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 rounded-xl border border-dashed border-slate-300 text-center bg-slate-50/50">
-                <ImageIcon size={24} className="mx-auto text-slate-400 mb-1" />
-                <p className="text-xs text-slate-500">No property photos uploaded yet.</p>
-              </div>
-            )}
           </div>
         </div>
       ) : (
-        /* ── View Mode Display ── */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">Business Name</span>
-              <span className="font-semibold text-slate-800 mt-1 block">
-                {business.businessName || 'Sunshine Grand Hostels'}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">Entity Type</span>
-              <span className="font-semibold text-slate-800 mt-1 block">
-                {business.businessType || 'Co-Living Management'}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">GSTIN / Registration</span>
-              <span className="font-semibold text-slate-800 mt-1 block font-mono text-xs">
-                {business.registrationNo || 'GSTIN29AABCT1332F1Z6'}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">Business Email</span>
-              <span className="font-semibold text-slate-800 mt-1 block font-mono text-xs">
-                {business.businessEmail || 'contact@sunshinehostels.com'}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">Business Phone</span>
-              <span className="font-semibold text-slate-800 mt-1 block">
-                {business.businessPhone || '+91 98765 43210'}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-xs font-medium text-slate-400 block">Commercial Address</span>
-              <span className="font-semibold text-slate-800 mt-1 block leading-relaxed text-xs">
-                {businessAddress.line1
-                  ? `${businessAddress.line1}, ${businessAddress.city}, ${businessAddress.state}`
-                  : 'Plot 45, Sarjapur Main Road, Bengaluru, KA'}
-              </span>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">Business / Trade Name</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block">
+              {owner?.businessName || 'Grand Oak Living Suites'}
+            </span>
           </div>
 
-          {/* Photo gallery preview */}
-          {photos.length > 0 && (
-            <div className="pt-4 border-t border-slate-100">
-              <span className="text-xs font-semibold text-slate-700 block mb-3">
-                Property Showcase ({photos.length} Photos)
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {photos.map((url, idx) => (
-                  <div key={idx} className="rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
-                    <img src={url} alt={`Business ${idx + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">Entity Type</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block capitalize">
+              {owner?.businessType ? owner.businessType.replace('_', ' ') : 'Private Limited'}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">PAN Number</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block font-mono text-xs">
+              {owner?.panNumber || 'AAACT1234F'}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">GSTIN Number</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block font-mono text-xs">
+              {owner?.gstin || '29AAACT1234F1Z5'}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">Operating Wallet</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 inline-flex items-center gap-1">
+              <Wallet size={14} className="text-emerald-600 dark:text-emerald-400" />
+              ₹{(owner?.walletBalance || 0).toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">Platform License</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block capitalize">
+              {owner?.licenseStatus || 'Active'} Tier
+            </span>
+          </div>
         </div>
       )}
     </div>

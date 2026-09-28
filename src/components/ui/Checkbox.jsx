@@ -20,10 +20,11 @@ const Checkbox = forwardRef(
             className={`
               w-4 h-4 rounded border flex items-center justify-center
               transition-colors duration-150 cursor-pointer
-              peer-checked:bg-primary-600 peer-checked:border-primary-600
+              bg-white dark:bg-slate-900
+              peer-checked:bg-primary-600 dark:peer-checked:bg-primary-600 peer-checked:border-primary-600 dark:peer-checked:border-primary-600
               peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500/20 peer-focus-visible:ring-offset-1
               peer-disabled:opacity-50 peer-disabled:cursor-not-allowed
-              ${error ? 'border-danger-300' : 'border-slate-300'}
+              ${error ? 'border-danger-300 dark:border-danger-700' : 'border-slate-300 dark:border-slate-700'}
             `}
             onClick={() => {
               const input = document.getElementById(checkboxId);
@@ -41,7 +42,9 @@ const Checkbox = forwardRef(
           <label
             htmlFor={checkboxId}
             className={`text-sm cursor-pointer select-none ${
-              disabled ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'
+              disabled
+                ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                : 'text-slate-700 dark:text-slate-300'
             }`}
           >
             {label}

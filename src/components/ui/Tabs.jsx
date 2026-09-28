@@ -18,8 +18,8 @@ export default function Tabs({
   return (
     <div className={className}>
       {/* Tab List */}
-      <div className="border-b border-slate-200" role="tablist">
-        <nav className="flex gap-0 -mb-px">
+      <div className="border-b border-slate-200 dark:border-slate-800" role="tablist">
+        <nav className="flex gap-0 -mb-px overflow-x-auto scrollbar-none">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -32,8 +32,8 @@ export default function Tabs({
                 border-b-2 transition-colors duration-150
                 whitespace-nowrap cursor-pointer
                 ${activeTab === tab.id
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400 font-semibold'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }
               `}
             >
@@ -45,8 +45,8 @@ export default function Tabs({
                     className={`
                       text-xs px-1.5 py-0.5 rounded-full font-medium
                       ${activeTab === tab.id
-                        ? 'bg-primary-100 text-primary-700'
-                        : 'bg-slate-100 text-slate-600'
+                        ? 'bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }
                     `}
                   >

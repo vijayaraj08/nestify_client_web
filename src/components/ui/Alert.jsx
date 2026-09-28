@@ -4,23 +4,23 @@ import { useState } from 'react';
 const alertConfig = {
   info: {
     icon: Info,
-    container: 'bg-info-50 border-info-200 text-info-800',
-    iconColor: 'text-info-500',
+    container: 'bg-info-50 dark:bg-sky-950/40 border-info-200 dark:border-sky-800 text-info-800 dark:text-sky-200',
+    iconColor: 'text-info-500 dark:text-sky-400',
   },
   success: {
     icon: CheckCircle,
-    container: 'bg-success-50 border-success-200 text-success-800',
-    iconColor: 'text-success-500',
+    container: 'bg-success-50 dark:bg-emerald-950/40 border-success-200 dark:border-emerald-800 text-success-800 dark:text-emerald-200',
+    iconColor: 'text-success-500 dark:text-emerald-400',
   },
   warning: {
     icon: AlertTriangle,
-    container: 'bg-warning-50 border-warning-200 text-warning-800',
-    iconColor: 'text-warning-500',
+    container: 'bg-warning-50 dark:bg-amber-950/40 border-warning-200 dark:border-amber-800 text-warning-800 dark:text-amber-200',
+    iconColor: 'text-warning-500 dark:text-amber-400',
   },
   danger: {
     icon: XCircle,
-    container: 'bg-danger-50 border-danger-200 text-danger-800',
-    iconColor: 'text-danger-500',
+    container: 'bg-danger-50 dark:bg-rose-950/40 border-danger-200 dark:border-rose-800 text-danger-800 dark:text-rose-200',
+    iconColor: 'text-danger-500 dark:text-rose-400',
   },
 };
 
@@ -61,7 +61,7 @@ export default function Alert({
         <button
           type="button"
           onClick={handleDismiss}
-          className="shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors cursor-pointer"
+          className="shrink-0 p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
           aria-label="Dismiss alert"
         >
           <X size={16} />

@@ -1,9 +1,9 @@
 const badgeVariants = {
-  success: 'bg-success-50 text-success-700 border border-success-200',
-  warning: 'bg-warning-50 text-warning-700 border border-warning-200',
-  danger: 'bg-danger-50 text-danger-700 border border-danger-200',
-  info: 'bg-info-50 text-info-700 border border-info-200',
-  neutral: 'bg-slate-100 text-slate-700 border border-slate-200',
+  success: 'bg-success-50 dark:bg-emerald-950/50 text-success-700 dark:text-emerald-300 border border-success-200 dark:border-emerald-800',
+  warning: 'bg-warning-50 dark:bg-amber-950/50 text-warning-700 dark:text-amber-300 border border-warning-200 dark:border-amber-800',
+  danger: 'bg-danger-50 dark:bg-rose-950/50 text-danger-700 dark:text-rose-300 border border-danger-200 dark:border-rose-800',
+  info: 'bg-info-50 dark:bg-sky-950/50 text-info-700 dark:text-sky-300 border border-info-200 dark:border-sky-800',
+  neutral: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
 };
 
 const badgeSizes = {
@@ -65,7 +65,7 @@ export default function Badge({
             ${resolvedVariant === 'warning' ? 'bg-warning-500' : ''}
             ${resolvedVariant === 'danger' ? 'bg-danger-500' : ''}
             ${resolvedVariant === 'info' ? 'bg-info-500' : ''}
-            ${resolvedVariant === 'neutral' ? 'bg-slate-500' : ''}
+            ${resolvedVariant === 'neutral' ? 'bg-slate-400 dark:bg-slate-500' : ''}
           `}
         />
       )}

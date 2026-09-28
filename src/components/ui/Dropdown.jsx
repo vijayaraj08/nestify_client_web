@@ -29,7 +29,7 @@ export default function Dropdown({
         {trigger || (
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-300 rounded-md bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             Options
             <ChevronDown size={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -42,15 +42,15 @@ export default function Dropdown({
         <div
           className={`
             absolute ${alignment} mt-1 z-40
-            min-w-[180px] bg-white rounded-md
-            border border-slate-200 shadow-lg
+            min-w-[180px] bg-white dark:bg-slate-900 rounded-md
+            border border-slate-200 dark:border-slate-800 shadow-xl
             py-1 animate-slide-down
           `}
           role="menu"
         >
           {items.map((item, idx) => {
             if (item.divider) {
-              return <div key={idx} className="border-t border-slate-100 my-1" />;
+              return <div key={idx} className="border-t border-slate-100 dark:border-slate-800 my-1" />;
             }
 
             return (
@@ -65,8 +65,8 @@ export default function Dropdown({
                   transition-colors duration-100
                   disabled:opacity-50 disabled:cursor-not-allowed
                   ${item.danger
-                    ? 'text-danger-600 hover:bg-danger-50'
-                    : 'text-slate-700 hover:bg-slate-50'
+                    ? 'text-danger-600 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-950/40'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }
                 `}
                 onClick={() => {

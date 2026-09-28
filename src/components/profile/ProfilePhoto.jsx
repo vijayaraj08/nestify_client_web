@@ -63,10 +63,10 @@ export default function ProfilePhoto({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col items-center text-center">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-col items-center text-center">
       {/* ── Avatar Photo with Status Badge ── */}
       <div className="relative mb-3.5 group">
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-xs bg-slate-100 flex items-center justify-center">
+        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-xs bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -80,35 +80,35 @@ export default function ProfilePhoto({
 
         {/* Uploading progress spinner overlay */}
         {uploading && (
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center text-white text-xs">
+          <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center text-white text-xs">
             <Loader2 size={22} className="animate-spin mb-1" />
             <span>Uploading...</span>
           </div>
         )}
 
         {/* Online Status Pill */}
-        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-xs" />
+        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs" />
       </div>
 
       {/* ── User Name & Role Pill ── */}
-      <h2 className="text-lg font-bold text-slate-900 leading-tight">
+      <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
         {userName || 'User'}
       </h2>
       <div className="mt-1 flex items-center justify-center gap-1.5 flex-wrap">
-        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-100">
+        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 border border-primary-100 dark:border-primary-800">
           {roleTitle}
         </span>
       </div>
 
       {/* Email */}
-      <p className="text-xs text-slate-500 mt-2 flex items-center justify-center gap-1 font-mono truncate max-w-full">
-        <Mail size={12} className="text-slate-400 shrink-0" />
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-center gap-1 font-mono truncate max-w-full">
+        <Mail size={12} className="text-slate-400 dark:text-slate-500 shrink-0" />
         <span className="truncate">{email}</span>
       </p>
 
       {/* ── Photo Action Controls (when Editing) ── */}
       {isEditing && (
-        <div className="w-full mt-4 pt-3 border-t border-slate-100 space-y-2">
+        <div className="w-full mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -123,7 +123,7 @@ export default function ProfilePhoto({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               <Camera size={13} />
               <span>Change Photo</span>
@@ -134,26 +134,26 @@ export default function ProfilePhoto({
                 type="button"
                 onClick={handleRemovePhoto}
                 disabled={uploading}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                 title="Remove photo"
               >
                 <Trash2 size={13} />
               </button>
             )}
           </div>
-          {error && <p className="text-[11px] text-rose-500 font-medium">{error}</p>}
+          {error && <p className="text-[11px] text-rose-500 dark:text-rose-400 font-medium">{error}</p>}
         </div>
       )}
 
       {/* ── Primary Action Button (Edit / Save / Cancel) ── */}
-      <div className="w-full mt-4 pt-4 border-t border-slate-100">
+      <div className="w-full mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
         {isEditing ? (
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={onCancel}
               disabled={saving}
-              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               <X size={14} />
               <span>Cancel</span>
@@ -191,26 +191,26 @@ export default function ProfilePhoto({
       </div>
 
       {/* ── Compact System Account Info Block ── */}
-      <div className="w-full mt-4 pt-3.5 border-t border-slate-100 text-left text-[11px] text-slate-500 space-y-2">
+      <div className="w-full mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 text-left text-[11px] text-slate-500 dark:text-slate-400 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 text-slate-400">
-            <Shield size={12} className="text-primary-600" /> Account ID:
+          <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
+            <Shield size={12} className="text-primary-600 dark:text-primary-400" /> Account ID:
           </span>
-          <span className="font-mono text-slate-700 font-semibold truncate max-w-[120px]" title={userId}>
+          <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[120px]" title={userId}>
             {userId}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Security:</span>
-          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+          <span className="text-slate-400 dark:text-slate-500">Security:</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
             <CheckCircle2 size={11} /> TLS 1.3 Active
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400">Role Authority:</span>
-          <span className="font-mono text-slate-700 font-semibold">{role}</span>
+          <span className="text-slate-400 dark:text-slate-500">Role Authority:</span>
+          <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{role}</span>
         </div>
       </div>
     </div>

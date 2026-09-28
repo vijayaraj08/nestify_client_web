@@ -9,6 +9,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <title>Nestify — PG & Hostel Management</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('nestify_theme');
+          if (!theme) {
+            for (var i = 0; i < localStorage.length; i++) {
+              var key = localStorage.key(i);
+              if (key && key.indexOf('hostello_user_settings_data') === 0) {
+                var data = JSON.parse(localStorage.getItem(key));
+                if (data && data.appearance && data.appearance.theme) {
+                  theme = data.appearance.theme;
+                  break;
+                }
+              }
+            }
+          }
+          var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+
+          var accent = localStorage.getItem('nestify_accent');
+          if (!accent) {
+            for (var j = 0; j < localStorage.length; j++) {
+              var k = localStorage.key(j);
+              if (k && k.indexOf('hostello_user_settings_data') === 0) {
+                var d = JSON.parse(localStorage.getItem(k));
+                if (d && d.appearance && d.appearance.accentColor) {
+                  accent = d.appearance.accentColor;
+                  break;
+                }
+              }
+            }
+          }
+          if (accent) {
+            document.documentElement.setAttribute('data-accent', accent);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

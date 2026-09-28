@@ -6,18 +6,18 @@ export default function KpiCard({
   change,
   trend = 'up', // 'up' | 'down' | 'alert' | 'neutral'
   icon: Icon,
-  color = 'bg-primary-50 text-primary-700',
+  color = 'bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-300',
 }) {
   const getTrendClass = () => {
     switch (trend) {
       case 'up':
-        return 'text-emerald-600';
+        return 'text-emerald-600 dark:text-emerald-400';
       case 'down':
-        return 'text-rose-600';
+        return 'text-rose-600 dark:text-rose-400';
       case 'alert':
-        return 'text-amber-600';
+        return 'text-amber-600 dark:text-amber-400';
       default:
-        return 'text-slate-500';
+        return 'text-slate-500 dark:text-slate-400';
     }
   };
 
@@ -35,9 +35,9 @@ export default function KpiCard({
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-500">{title}</span>
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</span>
         {Icon && (
           <div className={`p-2.5 rounded-xl ${color}`}>
             <Icon size={20} />
@@ -45,7 +45,7 @@ export default function KpiCard({
         )}
       </div>
       <div className="mt-4 flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-slate-900">{value}</span>
+        <span className="text-2xl font-bold text-slate-900 dark:text-white">{value}</span>
         {change && (
           <span className={`text-xs font-semibold flex items-center gap-1 ${getTrendClass()}`}>
             {renderTrendIcon()}

@@ -105,7 +105,7 @@ export const superAdminNavigation = [
   },
   {
     id: 'admin-subscriptions',
-    label: 'Subscriptions & Billing',
+    label: 'Subscription Plans',
     path: '/admin/subscriptions',
     icon: CreditCard,
     roles: [ROLES.SUPER_ADMIN],

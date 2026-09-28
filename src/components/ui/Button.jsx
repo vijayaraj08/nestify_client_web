@@ -3,19 +3,19 @@ import { Loader2 } from 'lucide-react';
 
 const variants = {
   primary:
-    'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-500',
+    'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-500 dark:focus-visible:ring-offset-slate-900',
   secondary:
-    'bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-slate-400',
+    'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-offset-slate-900',
   outline:
-    'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-primary-500',
+    'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 focus-visible:ring-primary-500 dark:focus-visible:ring-offset-slate-900',
   ghost:
-    'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 focus-visible:ring-slate-400',
+    'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 active:bg-slate-200 dark:active:bg-slate-700 focus-visible:ring-slate-400 dark:focus-visible:ring-offset-slate-900',
   danger:
-    'bg-danger-500 text-white hover:bg-danger-600 active:bg-danger-700 focus-visible:ring-danger-500',
+    'bg-danger-500 text-white hover:bg-danger-600 active:bg-danger-700 focus-visible:ring-danger-500 dark:focus-visible:ring-offset-slate-900',
   success:
-    'bg-success-500 text-white hover:bg-success-600 active:bg-success-700 focus-visible:ring-success-500',
+    'bg-success-500 text-white hover:bg-success-600 active:bg-success-700 focus-visible:ring-success-500 dark:focus-visible:ring-offset-slate-900',
   warning:
-    'bg-warning-500 text-white hover:bg-warning-600 active:bg-warning-700 focus-visible:ring-warning-500',
+    'bg-warning-500 text-white hover:bg-warning-600 active:bg-warning-700 focus-visible:ring-warning-500 dark:focus-visible:ring-offset-slate-900',
 };
 
 const sizes = {

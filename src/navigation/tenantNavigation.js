@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   Users,
   Receipt,
+  BarChart3,
   MessageSquareWarning,
   Wrench,
   UserCog,
@@ -55,6 +56,13 @@ export const tenantNavigation = [
     label: 'Rent & Payments',
     path: '/tenant/payments',
     icon: Receipt,
+    roles: [ROLES.TENANT],
+  },
+  {
+    id: 'tenant-reports',
+    label: 'Analytics & Reports',
+    path: '/tenant/reports',
+    icon: BarChart3,
     roles: [ROLES.TENANT],
   },
   {

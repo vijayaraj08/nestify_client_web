@@ -3,28 +3,25 @@ import { createContext, useContext, useState, useCallback } from 'react';
 import { loginUser, registerUser, logoutUser } from '../services/authService';
 import { normalizeRole } from '../constants/roles';
 import { hasRequiredRole } from './role.utils';
-
-const STORAGE_KEY_USER = 'hostello_auth_user';
-const STORAGE_KEY_TOKEN = 'hostello_auth_token';
+import cacheService, { CACHE_KEYS } from '../services/cacheService';
 
 const AuthContext = createContext(null);
 
 function getInitialAuthState() {
   try {
-    const storedUser = localStorage.getItem(STORAGE_KEY_USER);
-    const storedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+    const storedUser = cacheService.get(CACHE_KEYS.AUTH_USER);
+    const storedToken = cacheService.get(CACHE_KEYS.AUTH_TOKEN);
 
     if (storedUser && storedToken) {
-      const parsedUser = JSON.parse(storedUser);
-      if (parsedUser && parsedUser.role) {
-        parsedUser.role = normalizeRole(parsedUser.role);
-        return { user: parsedUser, token: storedToken };
+      if (storedUser.role) {
+        storedUser.role = normalizeRole(storedUser.role);
+        return { user: storedUser, token: storedToken };
       }
     }
   } catch (err) {
     console.error('Failed to restore auth session:', err);
-    localStorage.removeItem(STORAGE_KEY_USER);
-    localStorage.removeItem(STORAGE_KEY_TOKEN);
+    cacheService.remove(CACHE_KEYS.AUTH_USER);
+    cacheService.remove(CACHE_KEYS.AUTH_TOKEN);
   }
   return { user: null, token: null };
 }
@@ -54,8 +51,8 @@ export function AuthProvider({ children }) {
 
       setAuthState({ user: normalizedUser, token: result.token });
 
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(normalizedUser));
-      localStorage.setItem(STORAGE_KEY_TOKEN, result.token);
+      cacheService.set(CACHE_KEYS.AUTH_USER, normalizedUser);
+      cacheService.set(CACHE_KEYS.AUTH_TOKEN, result.token);
 
       return normalizedUser;
     } finally {
@@ -77,8 +74,8 @@ export function AuthProvider({ children }) {
 
       setAuthState({ user: normalizedUser, token: result.token });
 
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(normalizedUser));
-      localStorage.setItem(STORAGE_KEY_TOKEN, result.token);
+      cacheService.set(CACHE_KEYS.AUTH_USER, normalizedUser);
+      cacheService.set(CACHE_KEYS.AUTH_TOKEN, result.token);
 
       return normalizedUser;
     } finally {
@@ -96,10 +93,9 @@ export function AuthProvider({ children }) {
       console.warn('Logout API error:', err);
     } finally {
       setAuthState({ user: null, token: null });
-      localStorage.removeItem(STORAGE_KEY_USER);
-      localStorage.removeItem(STORAGE_KEY_TOKEN);
+      cacheService.clearUserSession(user?.email);
     }
-  }, []);
+  }, [user]);
 
   /**
    * Refresh the active user object
@@ -112,7 +108,7 @@ export function AuthProvider({ children }) {
         ...updatedUserData,
         role: updatedUserData?.role ? normalizeRole(updatedUserData.role) : prev.user.role,
       };
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+      cacheService.set(CACHE_KEYS.AUTH_USER, updatedUser);
       return { ...prev, user: updatedUser };
     });
   }, []);

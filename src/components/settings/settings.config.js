@@ -5,7 +5,6 @@ import {
   Bell,
   Globe,
   Building2,
-  Sliders,
 } from 'lucide-react';
 import { ROLES } from '../../constants/roles';
 
@@ -14,7 +13,7 @@ export function getSettingsTabsForRole(role) {
     { id: 'account', label: 'Account & Security', icon: Shield },
     { id: 'appearance', label: 'Appearance', icon: Palette },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'language', label: 'Language & Region', icon: Globe },
+    { id: 'language', label: 'Language', icon: Globe },
   ];
 
   if (role === ROLES.TENANT) {
@@ -31,12 +30,6 @@ export function getSettingsTabsForRole(role) {
     ];
   }
 
-  if (role === ROLES.SUPER_ADMIN) {
-    return [
-      ...commonTabs,
-      { id: 'platform', label: 'Platform Controls', icon: Sliders },
-    ];
-  }
-
+  // Super Admin shares common core settings (Account, Appearance, Notifications, Language)
   return commonTabs;
 }
