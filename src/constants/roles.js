@@ -7,6 +7,7 @@ export const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
   TENANT: 'TENANT',
   END_USER: 'END_USER',
+  STAFF: 'STAFF',
 };
 
 /**
@@ -14,13 +15,14 @@ export const ROLES = {
  */
 export const ROLE_LABELS = {
   [ROLES.SUPER_ADMIN]: 'Super Admin',
-  [ROLES.TENANT]: 'Property Tenant',
+  [ROLES.TENANT]: 'Property Tenant / Owner',
   [ROLES.END_USER]: 'Resident / User',
+  [ROLES.STAFF]: 'Hostel Staff Member',
 };
 
 /**
  * Normalizes any legacy or mixed-case role strings into standard ROLES enum.
- * E.g., "Admin" -> "SUPER_ADMIN", "Resident" -> "END_USER", "Tenant" -> "TENANT".
+ * E.g., "Admin" -> "SUPER_ADMIN", "Resident" -> "END_USER", "Tenant" -> "TENANT", "Staff" -> "STAFF".
  *
  * @param {string} role
  * @returns {string}
@@ -34,6 +36,9 @@ export function normalizeRole(role) {
   }
   if (upper === 'TENANT' || upper === 'PROPERTY_MANAGER' || upper === 'OWNER') {
     return ROLES.TENANT;
+  }
+  if (upper === 'STAFF' || upper === 'WARDEN' || upper === 'HOUSEKEEPING' || upper === 'MAINTENANCE') {
+    return ROLES.STAFF;
   }
   if (upper === 'RESIDENT' || upper === 'USER' || upper === 'END_USER' || upper === 'STUDENT') {
     return ROLES.END_USER;

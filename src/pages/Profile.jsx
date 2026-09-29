@@ -11,6 +11,7 @@ import {
   ProfilePhoto,
   TenantBusinessInformation,
   EndUserInformation,
+  StaffInformation,
   getProfileConfig,
 } from '../components/profile';
 
@@ -25,7 +26,7 @@ export default function Profile() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errors, setErrors] = useState({});
 
-  // Initialize synchronously with default data to avoid loading flicker
+  // Initialize synchronously with strict role-based data
   const [originalData, setOriginalData] = useState(() => getDefaultProfileData(user));
   const [formData, setFormData] = useState(() => getDefaultProfileData(user));
 
@@ -65,31 +66,37 @@ export default function Profile() {
           emergencyContact: { ...prev.emergencyContact, [field]: value },
         };
       }
-      if (section === 'ownerProfile') {
+      if (section === 'ownerProfile' && (role === ROLES.TENANT || role === 'OWNER')) {
         return {
           ...prev,
-          ownerProfile: { ...prev.ownerProfile, [field]: value },
+          ownerProfile: { ...(prev.ownerProfile || {}), [field]: value },
         };
       }
-      if (section === 'residentRoommate') {
+      if (section === 'staffProfile' && role === ROLES.STAFF) {
+        return {
+          ...prev,
+          staffProfile: { ...(prev.staffProfile || {}), [field]: value },
+        };
+      }
+      if (section === 'residentRoommate' && (role === ROLES.END_USER || role === 'RESIDENT')) {
         return {
           ...prev,
           residentProfile: {
-            ...prev.residentProfile,
+            ...(prev.residentProfile || {}),
             roommatePreferences: {
-              ...prev.residentProfile?.roommatePreferences,
+              ...(prev.residentProfile?.roommatePreferences || {}),
               [field]: value,
             },
           },
         };
       }
-      if (section === 'residentMess') {
+      if (section === 'residentMess' && (role === ROLES.END_USER || role === 'RESIDENT')) {
         return {
           ...prev,
           residentProfile: {
-            ...prev.residentProfile,
+            ...(prev.residentProfile || {}),
             messSubscription: {
-              ...prev.residentProfile?.messSubscription,
+              ...(prev.residentProfile?.messSubscription || {}),
               [field]: value,
             },
           },
@@ -201,7 +208,7 @@ export default function Profile() {
           />
 
           {/* Role-Specific: Owner / Tenant Business & License Information */}
-          {(role === ROLES.TENANT || role === ROLES.OWNER) && (
+          {(role === ROLES.TENANT || role === 'OWNER') && (
             <TenantBusinessInformation
               data={formData}
               isEditing={isEditing}
@@ -210,8 +217,17 @@ export default function Profile() {
           )}
 
           {/* Role-Specific: Resident Room & Roommate Preferences Information */}
-          {(role === ROLES.END_USER || role === ROLES.RESIDENT) && (
+          {(role === ROLES.END_USER || role === 'RESIDENT') && (
             <EndUserInformation
+              data={formData}
+              isEditing={isEditing}
+              onChange={handleFieldChange}
+            />
+          )}
+
+          {/* Role-Specific: Staff Assignment & Shift Information */}
+          {role === ROLES.STAFF && (
+            <StaffInformation
               data={formData}
               isEditing={isEditing}
               onChange={handleFieldChange}

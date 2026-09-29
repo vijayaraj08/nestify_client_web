@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import cacheService from '../services/cacheService';
+import cacheService, { CACHE_KEYS } from '../services/cacheService';
+import { updateSettingSection } from '../services/settingsService';
 
 const ThemeContext = createContext({
   theme: 'light',
@@ -59,11 +60,23 @@ export function ThemeProvider({ children }) {
   const setTheme = (newTheme) => {
     setThemeState(newTheme);
     applyTheme(newTheme);
+
+    // Background sync to database if user is logged in
+    const user = cacheService.get(CACHE_KEYS.AUTH_USER);
+    if (user) {
+      updateSettingSection(user, 'appearance', { theme: newTheme }).catch(() => {});
+    }
   };
 
   const setAccentColor = (newAccent) => {
     setAccentState(newAccent);
     applyAccent(newAccent);
+
+    // Background sync to database if user is logged in
+    const user = cacheService.get(CACHE_KEYS.AUTH_USER);
+    if (user) {
+      updateSettingSection(user, 'appearance', { accentColor: newAccent }).catch(() => {});
+    }
   };
 
   const toggleTheme = () => {
