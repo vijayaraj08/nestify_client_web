@@ -1,7 +1,7 @@
 import { ROLES, normalizeRole } from '../constants/roles';
 import cacheService, { CACHE_KEYS } from './cacheService';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+import { API_BASE_URL } from './authService';
 
 /**
  * Returns strictly role-based default profile data.
