@@ -7,7 +7,11 @@ import cacheService, { CACHE_KEYS } from './cacheService';
  * Real API integration with backend server + local caching and demo fallback.
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = (import.meta.env.VITE_API_URL || 'https://nestify-api-server.vercel.app').trim();
+export const API_BASE_URL = rawApiUrl
+  .replace(/\/api\/v1\/?$/, '')
+  .replace(/\/api\/?$/, '')
+  .replace(/\/+$/, '');
 
 /**
  * Development / Demo accounts for testing the major roles:

@@ -16,6 +16,8 @@ import GenericPage from '../pages/GenericPage';
 import DesignSystemPreview from '../pages/DesignSystemPreview';
 import PlansManagement from '../pages/admin/PlansManagement';
 import AnalyticsReports from '../pages/admin/AnalyticsReports';
+import TenantsManagement from '../pages/admin/TenantsManagement';
+import TenantOnboardingPage from '../pages/admin/TenantOnboardingPage';
 
 /**
  * Root Redirection Handler for '/'
@@ -107,7 +109,8 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="tenants" element={<GenericPage title="Tenants & Hostels" />} />
+        <Route path="tenants" element={<TenantsManagement />} />
+        <Route path="tenants/new" element={<TenantOnboardingPage />} />
         <Route path="properties" element={<GenericPage title="Properties & Units" />} />
         <Route path="bookings" element={<GenericPage title="Platform Bookings" />} />
         <Route path="move-outs" element={<GenericPage title="Move-Out Requests" />} />
