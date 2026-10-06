@@ -1,8 +1,6 @@
 import { ROLES, normalizeRole } from '../constants/roles';
 import cacheService, { CACHE_KEYS } from './cacheService';
-import { durationStringToMs, timeStringToMs } from '../utils/timeUtils';
-
-import { API_BASE_URL } from './authService';
+import { apiRequest } from './apiClient';
 
 /**
  * Returns default system and user preference data strictly based on role.
@@ -13,32 +11,32 @@ export function getDefaultSettingsData(user) {
 
   const base = {
     appearance: {
-      theme: 'light', // 'light' | 'dark' | 'system'
-      accentColor: 'indigo', // 'indigo' | 'emerald' | 'blue' | 'violet' | 'amber' | 'rose'
-      density: 'comfortable', // 'compact' | 'comfortable' | 'spacious'
+      theme: user?.settings?.theme || 'dark', // 'light' | 'dark' | 'system'
+      accentColor: 'indigo',
+      density: 'comfortable',
       animationsEnabled: true,
       glassmorphism: true,
     },
     notifications: {
-      inAppPush: true,
-      emailNotifications: true,
-      smsNotifications: false,
-      whatsappUpdates: true,
+      inAppPush: user?.settings?.notifications?.push ?? true,
+      emailNotifications: user?.settings?.notifications?.email ?? true,
+      smsNotifications: user?.settings?.notifications?.sms ?? false,
+      whatsappUpdates: user?.settings?.notifications?.whatsapp ?? false,
 
-      rentReminders: true,
-      maintenanceAlerts: true,
-      gatePassAlerts: true,
-      messMenuAlerts: true,
+      rentReminders: user?.settings?.notifications?.categories?.rentReminders ?? true,
+      maintenanceAlerts: user?.settings?.notifications?.categories?.complaints ?? true,
+      gatePassAlerts: user?.settings?.notifications?.categories?.notices ?? true,
+      messMenuAlerts: user?.settings?.notifications?.categories?.foodMenu ?? true,
       announcements: true,
 
-      frequency: 'instant', // 'instant' | 'daily_digest' | 'weekly_summary'
+      frequency: 'instant',
     },
     language: {
-      locale: 'en', // 'en' | 'hi' | 'ta' | 'te' | 'kn' | 'ml' | 'mr' | 'bn' | 'gu'
+      locale: user?.settings?.language || 'en',
     },
     security: {
-      twoFactorEnabled: false,
-      sessionTimeoutMs: 1800000, // 30 minutes in milliseconds
+      twoFactorEnabled: user?.settings?.twoFactorAuth?.isEnabled ?? false,
+      sessionTimeoutMs: user?.settings?.tenantSettings?.sessionTimeoutMs ?? 1800000,
     },
   };
 
@@ -48,11 +46,12 @@ export function getDefaultSettingsData(user) {
       tenantSettings: {
         autoGenerateInvoices: true,
         invoiceDueDateDay: 5,
-        curfewTimeMs: 81000000, // 10:30 PM (22.5 * 3600 * 1000)
+        curfewTimeMs: user?.settings?.tenantSettings?.curfewTimeMs ?? 81000000,
         allowVisitorOvernight: false,
-        visitorCheckInRequired: true,
+        visitorCheckInRequired: user?.settings?.tenantSettings?.allowGuestCheckIn ?? true,
         notifyWardenOnGatePass: true,
         lateFinePerDay: 50,
+        ...(user?.settings?.tenantSettings || {}),
       },
     };
   }
@@ -65,38 +64,79 @@ export function getDefaultSettingsData(user) {
         dietaryPreference: 'Vegetarian',
         receiveMenuUpdates: true,
         silentHoursNotification: true,
-        shareContactWithRoommates: true,
+        shareContactWithRoommates: user?.settings?.endUserSettings?.shareContactWithPeers ?? true,
+        ...(user?.settings?.endUserSettings || {}),
       },
     };
   }
 
-  // SUPER_ADMIN / ADMIN / STAFF: Common settings only
   return base;
 }
 
 /**
+ * Transforms raw backend user.settings object into frontend Settings UI structure
+ */
+export function mapBackendSettingsToUI(backendSettings, user) {
+  const baseDefault = getDefaultSettingsData(user);
+  if (!backendSettings) return baseDefault;
+
+  return {
+    ...baseDefault,
+    appearance: {
+      ...baseDefault.appearance,
+      theme: backendSettings.theme || backendSettings.appearance?.theme || baseDefault.appearance.theme,
+      accentColor: backendSettings.accentColor || backendSettings.appearance?.accentColor || baseDefault.appearance.accentColor,
+    },
+    notifications: {
+      ...baseDefault.notifications,
+      inAppPush: backendSettings.notifications?.push ?? backendSettings.notifications?.inAppPush ?? baseDefault.notifications.inAppPush,
+      emailNotifications: backendSettings.notifications?.email ?? backendSettings.notifications?.emailNotifications ?? baseDefault.notifications.emailNotifications,
+      smsNotifications: backendSettings.notifications?.sms ?? backendSettings.notifications?.smsNotifications ?? baseDefault.notifications.smsNotifications,
+      whatsappUpdates: backendSettings.notifications?.whatsapp ?? backendSettings.notifications?.whatsappUpdates ?? baseDefault.notifications.whatsappUpdates,
+      rentReminders: backendSettings.notifications?.categories?.rentReminders ?? backendSettings.notifications?.rentReminders ?? baseDefault.notifications.rentReminders,
+      maintenanceAlerts: backendSettings.notifications?.categories?.complaints ?? backendSettings.notifications?.maintenanceAlerts ?? baseDefault.notifications.maintenanceAlerts,
+      gatePassAlerts: backendSettings.notifications?.categories?.notices ?? backendSettings.notifications?.gatePassAlerts ?? baseDefault.notifications.gatePassAlerts,
+      messMenuAlerts: backendSettings.notifications?.categories?.foodMenu ?? backendSettings.notifications?.messMenuAlerts ?? baseDefault.notifications.messMenuAlerts,
+    },
+    language: {
+      ...baseDefault.language,
+      locale: typeof backendSettings.language === 'string' ? backendSettings.language : (backendSettings.language?.locale || 'en'),
+    },
+    security: {
+      ...baseDefault.security,
+      twoFactorEnabled: backendSettings.twoFactorAuth?.isEnabled ?? backendSettings.security?.twoFactorEnabled ?? false,
+      sessionTimeoutMs: backendSettings.tenantSettings?.sessionTimeoutMs ?? 1800000,
+    },
+    tenantSettings: {
+      ...(baseDefault.tenantSettings || {}),
+      ...(backendSettings.tenantSettings || {}),
+    },
+    endUserSettings: {
+      ...(baseDefault.endUserSettings || {}),
+      ...(backendSettings.endUserSettings || {}),
+    },
+  };
+}
+
+/**
  * Sanitizes settings data according to the user's role.
- * Ensures irrelevant role-specific setting blocks are stripped out.
  */
 export function sanitizeSettingsForRole(role, settings) {
   if (!settings) return {};
   const normalizedRole = normalizeRole(role);
   const sanitized = { ...settings };
 
-  // Super admin / admin: No tenantSettings, no endUserSettings
   if (normalizedRole === ROLES.SUPER_ADMIN || normalizedRole === ROLES.STAFF) {
     delete sanitized.tenantSettings;
     delete sanitized.endUserSettings;
     return sanitized;
   }
 
-  // Tenant / Owner: Retain only tenantSettings
   if (normalizedRole === ROLES.TENANT || normalizedRole === 'OWNER') {
     delete sanitized.endUserSettings;
     return sanitized;
   }
 
-  // Resident / End-User: Retain only endUserSettings
   if (normalizedRole === ROLES.END_USER || normalizedRole === 'RESIDENT') {
     delete sanitized.tenantSettings;
     return sanitized;
@@ -127,65 +167,50 @@ export function applyAppearanceToDOM(appearance) {
 }
 
 /**
- * Helper to fetch settings from API across standard endpoints
+ * Helper to fetch settings from API via single standard endpoint
+ * GET /api/v1/settings
  */
-async function fetchSettingsFromAPI(token) {
-  const endpoints = ['/api/v1/users/settings', '/api/v1/settings', '/api/v1/profile', '/api/profile'];
+async function fetchSettingsFromAPI() {
+  try {
+    const res = await apiRequest('/api/v1/settings', {
+      method: 'GET',
+    });
 
-  for (const endpoint of endpoints) {
-    try {
-      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.data || json;
-        if (data.settings) return data.settings;
-        if (data.appearance || data.notifications || data.language) return data;
-      }
-    } catch {
-      // Continue trying next endpoint
+    if (res.ok) {
+      const json = await res.json();
+      const data = json.data || json;
+      if (data.settings) return data.settings;
+      if (data.theme || data.notifications || data.language) return data;
     }
+  } catch (err) {
+    if (err.status === 401) throw err;
+    console.warn('[SettingsService] Fetch settings notice:', err.message);
   }
   return null;
 }
 
 /**
- * Helper to persist settings to API across standard endpoints
+ * Helper to persist settings to API via single standard endpoint
+ * PUT /api/v1/settings
  */
-async function persistSettingsToAPI(token, settingsPayload) {
-  const endpoints = [
-    { url: '/api/v1/users/settings', body: JSON.stringify(settingsPayload) },
-    { url: '/api/v1/settings', body: JSON.stringify(settingsPayload) },
-    { url: '/api/v1/profile', body: JSON.stringify({ settings: settingsPayload }) },
-    { url: '/api/profile', body: JSON.stringify({ settings: settingsPayload }) },
-  ];
+async function persistSettingsToAPI(settingsPayload) {
+  try {
+    const res = await apiRequest('/api/v1/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settingsPayload),
+    });
 
-  for (const { url, body } of endpoints) {
-    try {
-      const res = await fetch(`${API_BASE_URL}${url}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-        body,
-      });
-
-      if (res.ok) {
-        return true;
-      }
-    } catch {
-      // Continue trying next endpoint
+    if (res.ok) {
+      const json = await res.json();
+      return json.data || json;
+    }
+  } catch (err) {
+    if (err.status === 401) throw err;
+    if (err.message && !err.message.includes('Failed to fetch')) {
+      console.warn('[SettingsService] Persist settings notice:', err.message);
     }
   }
-  return false;
+  return null;
 }
 
 /**
@@ -193,96 +218,43 @@ async function persistSettingsToAPI(token, settingsPayload) {
  */
 export async function getSettings(user) {
   const role = normalizeRole(user?.role || ROLES.END_USER);
-  const defaultData = getDefaultSettingsData(user);
   const userEmail = user?.email;
 
-  // 1. Check local cache for immediate 0ms availability
-  const localData = cacheService.getUserSettings(userEmail);
+  // 1. If user object from UserContext already has backend settings, map immediately
+  if (user?.settings && Object.keys(user.settings).length > 0) {
+    const mapped = mapBackendSettingsToUI(user.settings, user);
+    applyAppearanceToDOM(mapped.appearance);
+    return sanitizeSettingsForRole(role, mapped);
+  }
 
+  // 2. Check local cache
+  const localData = cacheService.getUserSettings(userEmail);
   if (localData?.appearance) {
     applyAppearanceToDOM(localData.appearance);
   }
 
-  // 2. Try fetching latest saved settings from Database (MongoDB API)
+  // 3. Fetch from API
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-    if (token) {
-      const dbSettings = await fetchSettingsFromAPI(token);
-
-      if (dbSettings) {
-        const merged = {
-          ...defaultData,
-          ...(localData || {}),
-          ...dbSettings,
-          appearance: {
-            ...defaultData.appearance,
-            ...(localData?.appearance || {}),
-            ...(dbSettings.appearance || {}),
-          },
-          notifications: {
-            ...defaultData.notifications,
-            ...(localData?.notifications || {}),
-            ...(dbSettings.notifications || {}),
-          },
-          language: {
-            ...defaultData.language,
-            ...(localData?.language || {}),
-            ...(dbSettings.language || {}),
-          },
-          security: {
-            ...defaultData.security,
-            ...(localData?.security || {}),
-            ...(dbSettings.security || {}),
-          },
-          tenantSettings: {
-            ...(defaultData.tenantSettings || {}),
-            ...(localData?.tenantSettings || {}),
-            ...(dbSettings.tenantSettings || {}),
-          },
-          endUserSettings: {
-            ...(defaultData.endUserSettings || {}),
-            ...(localData?.endUserSettings || {}),
-            ...(dbSettings.endUserSettings || {}),
-          },
-        };
-
-        const cleanSettings = sanitizeSettingsForRole(role, merged);
-        cacheService.setUserSettings(userEmail, cleanSettings);
-        applyAppearanceToDOM(cleanSettings.appearance);
-        return cleanSettings;
-      }
+    const dbSettings = await fetchSettingsFromAPI();
+    if (dbSettings) {
+      const mapped = mapBackendSettingsToUI(dbSettings, user);
+      const cleanSettings = sanitizeSettingsForRole(role, mapped);
+      cacheService.setUserSettings(userEmail, cleanSettings);
+      applyAppearanceToDOM(cleanSettings.appearance);
+      return cleanSettings;
     }
   } catch (err) {
     console.warn('[SettingsService] API settings sync fallback to local cache:', err);
   }
 
-  // 3. Fallback to local cache or defaults
   if (localData) {
-    const result = {
-      ...defaultData,
-      ...localData,
-      appearance: {
-        ...defaultData.appearance,
-        ...(localData.appearance || {}),
-      },
-      notifications: {
-        ...defaultData.notifications,
-        ...(localData.notifications || {}),
-      },
-      language: {
-        ...defaultData.language,
-        ...(localData.language || {}),
-      },
-      security: {
-        ...defaultData.security,
-        ...(localData.security || {}),
-      },
-    };
-    const cleanSettings = sanitizeSettingsForRole(role, result);
+    const cleanSettings = sanitizeSettingsForRole(role, localData);
     applyAppearanceToDOM(cleanSettings.appearance);
     return cleanSettings;
   }
 
+  const defaultData = getDefaultSettingsData(user);
+  applyAppearanceToDOM(defaultData.appearance);
   return defaultData;
 }
 
@@ -293,18 +265,45 @@ export async function updateSettings(user, updatedSettings) {
   const role = normalizeRole(user?.role || ROLES.END_USER);
   const userEmail = user?.email;
 
-  // 1. Sanitize payload strictly according to role
+  // 1. Sanitize UI payload
   const payload = sanitizeSettingsForRole(role, updatedSettings);
 
   // 2. Immediately cache in localStorage for 0ms lag
   cacheService.setUserSettings(userEmail, payload);
   applyAppearanceToDOM(payload?.appearance);
 
-  // 3. Persist to MongoDB Database via Backend API
+  // 3. Prepare payload matching backend Schema
+  const backendPayload = {
+    theme: payload.appearance?.theme || 'dark',
+    accentColor: payload.appearance?.accentColor || 'indigo',
+    appearance: payload.appearance || undefined,
+    language: payload.language?.locale || 'en',
+    notifications: {
+      email: payload.notifications?.emailNotifications ?? true,
+      push: payload.notifications?.inAppPush ?? true,
+      sms: payload.notifications?.smsNotifications ?? false,
+      whatsapp: payload.notifications?.whatsappUpdates ?? false,
+      categories: {
+        rentReminders: payload.notifications?.rentReminders ?? true,
+        notices: payload.notifications?.gatePassAlerts ?? true,
+        complaints: payload.notifications?.maintenanceAlerts ?? true,
+        foodMenu: payload.notifications?.messMenuAlerts ?? true,
+        emergencySos: true,
+      },
+    },
+    twoFactorAuth: {
+      isEnabled: payload.security?.twoFactorEnabled ?? false,
+      method: 'otp_sms',
+    },
+    tenantSettings: payload.tenantSettings || undefined,
+    endUserSettings: payload.endUserSettings || undefined,
+  };
+
+  // 4. Persist to MongoDB Database via Backend API with cookies
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-    if (token) {
-      await persistSettingsToAPI(token, payload);
+    const updated = await persistSettingsToAPI(backendPayload);
+    if (updated) {
+      return payload;
     }
   } catch (err) {
     console.warn('[SettingsService] Backend DB settings persist fallback to local cache:', err);
@@ -332,8 +331,6 @@ export async function updateSettingSection(user, sectionKey, sectionData) {
  * Change password service method
  */
 export async function changePassword({ currentPassword, newPassword, confirmPassword }) {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
   if (!currentPassword) {
     throw new Error('Current password is required.');
   }
@@ -345,28 +342,31 @@ export async function changePassword({ currentPassword, newPassword, confirmPass
   }
 
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-    if (token) {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
+    const response = await apiRequest('/api/v1/profile/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
 
-      if (response.ok) {
-        return { success: true, message: 'Password changed successfully.' };
-      }
+    if (response.ok) {
+      return { success: true, message: 'Password changed successfully.' };
     }
-  } catch (e) {}
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      const json = await response.json();
+      throw new Error(json.message || 'Failed to change password.');
+    }
+  } catch (err) {
+    if (err.status === 401) throw err;
+    if (err.message && !err.message.includes('Failed to fetch')) {
+      throw err;
+    }
+  }
 
   return { success: true, message: 'Password changed successfully.' };
 }
 
 export default {
   getDefaultSettingsData,
+  mapBackendSettingsToUI,
   sanitizeSettingsForRole,
   applyAppearanceToDOM,
   getSettings,

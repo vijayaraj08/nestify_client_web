@@ -47,7 +47,7 @@ export default function AppLayout({ role: layoutRole, children }) {
   const handleLogout = async () => {
     setUserDropdownOpen(false);
     await logout();
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (
@@ -75,9 +75,8 @@ export default function AppLayout({ role: layoutRole, children }) {
       >
         {/* Brand Header */}
         <div
-          className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 px-4 shrink-0 ${
-            sidebarCollapsed ? 'justify-center' : 'justify-between'
-          }`}
+          className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 px-4 shrink-0 ${sidebarCollapsed ? 'justify-center' : 'justify-between'
+            }`}
         >
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
@@ -116,10 +115,9 @@ export default function AppLayout({ role: layoutRole, children }) {
                 className={({ isActive }) => `
                   group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${sidebarCollapsed ? 'justify-center' : ''}
-                  ${
-                    isActive
-                      ? 'bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-300 shadow-xs border border-primary-100 dark:border-primary-900/60 font-semibold'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-100'
+                  ${isActive
+                    ? 'bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-300 shadow-xs border border-primary-100 dark:border-primary-900/60 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-100'
                   }
                 `}
                 title={sidebarCollapsed ? item.label : undefined}
@@ -128,9 +126,8 @@ export default function AppLayout({ role: layoutRole, children }) {
                   <>
                     <Icon
                       size={20}
-                      className={`shrink-0 transition-colors ${
-                        isActive ? 'text-primary-700 dark:text-primary-300' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                      }`}
+                      className={`shrink-0 transition-colors ${isActive ? 'text-primary-700 dark:text-primary-300' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
+                        }`}
                     />
                     {!sidebarCollapsed && (
                       <span className="truncate flex-1">{item.label}</span>
@@ -174,9 +171,8 @@ export default function AppLayout({ role: layoutRole, children }) {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-200 ${
-          sidebarCollapsed ? 'lg:ml-18' : 'lg:ml-64'
-        }`}
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-200 ${sidebarCollapsed ? 'lg:ml-18' : 'lg:ml-64'
+          }`}
       >
         {/* Top Navbar */}
         <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 shadow-2xs">

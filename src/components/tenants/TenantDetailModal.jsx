@@ -25,6 +25,7 @@ export default function TenantDetailModal({
   tenant,
   onClose,
   onStatusUpdate,
+  onEdit,
 }) {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -231,11 +232,26 @@ export default function TenantDetailModal({
             )}
           </div>
 
-          <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Close
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onClose();
+                onEdit?.(tenant);
+              }}
+              className="flex items-center gap-1.5"
+            >
+              Edit Tenant
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

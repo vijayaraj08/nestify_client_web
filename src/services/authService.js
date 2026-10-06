@@ -2,9 +2,11 @@ import { ROLES, normalizeRole } from '../constants/roles';
 import cacheService, { CACHE_KEYS } from './cacheService';
 
 /**
- * Authentication Service
- * ─────────────────────
- * Real API integration with backend server + local caching and demo fallback.
+ * Authentication & User Service
+ * ─────────────────────────────
+ * Implements the 2-step authenticated cookie session flow:
+ *   1. POST /auth/login -> Sets HTTP-only auth cookie & returns { success: true, message: "Login successful" }
+ *   2. GET /users/me    -> Fetches sanitized user details & permissions from active cookie session
  */
 
 const rawApiUrl = (import.meta.env.VITE_API_URL || 'https://nestify-api-server.vercel.app').trim();
@@ -14,10 +16,7 @@ export const API_BASE_URL = rawApiUrl
   .replace(/\/+$/, '');
 
 /**
- * Development / Demo accounts for testing the major roles:
- * 1. SUPER_ADMIN
- * 2. TENANT
- * 3. END_USER
+ * Development / Demo accounts
  */
 export const DEMO_ACCOUNTS = [
   {
@@ -46,92 +45,154 @@ export const DEMO_ACCOUNTS = [
     role: ROLES.END_USER,
     email: 'resident@hostello.com',
     password: 'Resident@123',
-    name: 'Rahul Sharma',
+    name: 'Michael Chen',
   },
 ];
 
 /**
- * Log a user in with email + password via Backend API.
+ * Fetch Current Authenticated User details from backend session
+ * GET /api/v1/users/me
+ *
+ * @returns {Promise<object>} Authenticated User object
+ */
+export async function getCurrentUser() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include', // Automatically sends HTTP-only session cookies
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      // Not authenticated or session expired
+      return null;
+    }
+
+    if (response.ok) {
+      const json = await response.json();
+      const rawUser = json.data?.user || json.data || json.user || json;
+
+      if (rawUser && (rawUser.id || rawUser._id || rawUser.email)) {
+        const user = {
+          id: rawUser._id || rawUser.id || `usr-${Date.now()}`,
+          name: rawUser.name || `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() || rawUser.email?.split('@')[0],
+          email: rawUser.email || '',
+          phone: rawUser.phone || '',
+          role: normalizeRole(rawUser.role || ROLES.END_USER),
+          permissions: Array.isArray(rawUser.permissions) ? rawUser.permissions : [],
+          profileImage: rawUser.profileImage || rawUser.avatar || rawUser.profilePhoto || null,
+          avatar: rawUser.avatar || rawUser.profileImage || rawUser.profilePhoto || null,
+          bio: rawUser.bio || '',
+          status: rawUser.status || 'active',
+          ownerProfile: rawUser.ownerProfile,
+          residentProfile: rawUser.residentProfile,
+          staffProfile: rawUser.staffProfile,
+          settings: rawUser.settings || {},
+        };
+
+        // Cache sanitized profile locally for fast UI hydration
+        cacheService.set(CACHE_KEYS.AUTH_USER, user);
+        return user;
+      }
+    }
+  } catch (err) {
+    if (err.message && !err.message.includes('Failed to fetch')) {
+      console.warn('[AuthService] Fetching current user details error:', err.message);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Step 1: POST /auth/login -> Focuses strictly on authentication.
+ * Step 2: GET /users/me   -> Automatically fetches authenticated user details.
  *
  * @param {{ email: string, password: string }} credentials
- * @returns {Promise<{ user: object, token: string }>}
+ * @returns {Promise<{ user: object, success: boolean }>}
  */
 export async function loginUser({ email, password }) {
   const trimmedEmail = String(email || '').trim().toLowerCase();
 
-  // 1. Try real Backend Authentication API
+  // 1. Try real Backend Authentication API via single standard route /api/v1/auth/login
   try {
-    const endpoints = ['/api/v1/auth/login', '/api/auth/login', '/api/v1/login', '/api/login'];
-    let lastError = null;
-    let response = null;
+    const loginResponse = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      credentials: 'include', // Ensures HTTP-only cookie is set in browser
+      body: JSON.stringify({
+        email: trimmedEmail,
+        username: trimmedEmail,
+        password,
+      }),
+    });
 
-    for (const endpoint of endpoints) {
-      try {
-        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            email: trimmedEmail,
-            username: trimmedEmail,
-            password,
-          }),
-        });
+    if (loginResponse) {
+      const json = await loginResponse.json();
 
-        // If endpoint exists and responded (not 404)
-        if (res.status !== 404) {
-          response = res;
-          break;
-        }
-      } catch (networkErr) {
-        lastError = networkErr;
-      }
-    }
-
-    if (response) {
-      const json = await response.json();
-
-      if (!response.ok) {
+      if (!loginResponse.ok) {
         const message = json.message || json.error || json.msg || 'Invalid email or password';
         throw new Error(message);
       }
 
-      // Parse payload from response
+      // Step 2: Fetch authenticated user's details via GET /users/me
+      const fetchedUser = await getCurrentUser();
+
+      if (fetchedUser) {
+        return { user: fetchedUser, success: true };
+      }
+
+      // Fallback if data was optionally enclosed in login payload or fallback parse
       const data = json.data || json;
-      const rawUser = data.user || json.user || data;
-      const token = data.token || json.token || data.accessToken || json.accessToken || `jwt-${Date.now()}`;
+      const rawUser = data.user || json.user;
+      if (rawUser) {
+        const fallbackUser = {
+          id: rawUser._id || rawUser.id || `usr-${Date.now()}`,
+          name: rawUser.name || trimmedEmail.split('@')[0],
+          email: rawUser.email || trimmedEmail,
+          phone: rawUser.phone || '',
+          role: normalizeRole(rawUser.role || ROLES.END_USER),
+          permissions: rawUser.permissions || [],
+          profileImage: rawUser.avatar || rawUser.profileImage || null,
+          avatar: rawUser.avatar || rawUser.profileImage || null,
+        };
+        cacheService.set(CACHE_KEYS.AUTH_USER, fallbackUser);
+        return { user: fallbackUser, success: true };
+      }
 
-      const user = {
-        id: rawUser._id || rawUser.id || crypto.randomUUID?.() || `usr-${Date.now()}`,
-        name: rawUser.name || `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() || trimmedEmail.split('@')[0],
-        email: rawUser.email || trimmedEmail,
-        phone: rawUser.phone || '',
-        role: normalizeRole(rawUser.role || ROLES.END_USER),
-        avatar: rawUser.avatar || rawUser.profilePhoto || null,
+      // Construct standard user from login email if endpoint only returned { success: true }
+      let inferredRole = ROLES.END_USER;
+      if (trimmedEmail.includes('admin')) inferredRole = ROLES.SUPER_ADMIN;
+      else if (trimmedEmail.includes('tenant') || trimmedEmail.includes('manager')) inferredRole = ROLES.TENANT;
+
+      const basicUser = {
+        id: `usr-${Date.now()}`,
+        name: trimmedEmail.split('@')[0].replace(/[._-]/g, ' '),
+        email: trimmedEmail,
+        role: inferredRole,
+        permissions: [],
+        profileImage: null,
       };
-
-      // Store in centralized cache
-      cacheService.set(CACHE_KEYS.AUTH_USER, user);
-      cacheService.set(CACHE_KEYS.AUTH_TOKEN, token);
-      cacheService.set('token', token);
-
-      return { user, token };
+      cacheService.set(CACHE_KEYS.AUTH_USER, basicUser);
+      return { user: basicUser, success: true };
     }
 
     if (lastError && lastError.message !== 'Failed to fetch') {
       throw lastError;
     }
   } catch (err) {
-    // If it's a validation / wrong password error from the backend, propagate immediately
     if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
       throw err;
     }
-    console.warn('[AuthService] Backend API not reachable or offline, evaluating demo fallback:', err);
+    console.warn('[AuthService] Backend API offline/unreachable, evaluating demo fallback:', err);
   }
 
-  // 2. Demo fallback if backend is offline/mocking mode
+  // 2. Demo fallback for mock/offline testing
   const demo = DEMO_ACCOUNTS.find(
     (a) => a.email.toLowerCase() === trimmedEmail && a.password === password
   );
@@ -142,17 +203,14 @@ export async function loginUser({ email, password }) {
       name: demo.name || demo.label,
       email: demo.email,
       role: demo.role,
-      avatar: null,
+      permissions: [],
+      profileImage: null,
     };
-    const token = `demo-jwt-${Date.now()}`;
     cacheService.set(CACHE_KEYS.AUTH_USER, user);
-    cacheService.set(CACHE_KEYS.AUTH_TOKEN, token);
-    cacheService.set('token', token);
-
-    return { user, token };
+    return { user, success: true };
   }
 
-  // Fallback demo matching for testing
+  // Generic demo fallback for test accounts
   if (password === 'Password@123' || password.length >= 4) {
     let role = ROLES.END_USER;
     if (trimmedEmail.includes('admin')) role = ROLES.SUPER_ADMIN;
@@ -163,14 +221,11 @@ export async function loginUser({ email, password }) {
       name: trimmedEmail.split('@')[0].replace(/[._-]/g, ' '),
       email: trimmedEmail,
       role,
-      avatar: null,
+      permissions: [],
+      profileImage: null,
     };
-    const token = `demo-jwt-${Date.now()}`;
     cacheService.set(CACHE_KEYS.AUTH_USER, user);
-    cacheService.set(CACHE_KEYS.AUTH_TOKEN, token);
-    cacheService.set('token', token);
-
-    return { user, token };
+    return { user, success: true };
   }
 
   throw new Error('Invalid email or password. Please try again.');
@@ -180,75 +235,57 @@ export async function loginUser({ email, password }) {
  * Register a new user via Backend API.
  *
  * @param {{ name: string, email: string, password: string, phone?: string, role?: string }} userData
- * @returns {Promise<{ user: object, token: string }>}
+ * @returns {Promise<{ user: object, success: boolean }>}
  */
 export async function registerUser({ name, email, password, phone, role = 'Resident' }) {
   const trimmedEmail = String(email || '').trim().toLowerCase();
   const normalizedRole = normalizeRole(role);
 
-  // 1. Try real Backend Registration API
   try {
-    const endpoints = ['/api/v1/auth/register', '/api/auth/register', '/api/v1/register', '/api/register'];
-    let lastError = null;
-    let response = null;
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        name,
+        email: trimmedEmail,
+        phone,
+        password,
+        role: normalizedRole,
+      }),
+    });
 
-    for (const endpoint of endpoints) {
-      try {
-        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            name,
-            email: trimmedEmail,
-            phone,
-            password,
-            role: normalizedRole,
-          }),
-        });
+    const json = await response.json().catch(() => ({}));
 
-        if (res.status !== 404) {
-          response = res;
-          break;
-        }
-      } catch (networkErr) {
-        lastError = networkErr;
-      }
+    if (!response.ok) {
+      const message = json.message || json.error || json.msg || 'Registration failed';
+      throw new Error(message);
     }
 
-    if (response) {
-      const json = await response.json();
-
-      if (!response.ok) {
-        const message = json.message || json.error || json.msg || 'Registration failed';
-        throw new Error(message);
-      }
-
-      const data = json.data || json;
-      const rawUser = data.user || json.user || data;
-      const token = data.token || json.token || data.accessToken || json.accessToken || `jwt-${Date.now()}`;
-
-      const user = {
-        id: rawUser._id || rawUser.id || crypto.randomUUID?.() || `usr-${Date.now()}`,
-        name: rawUser.name || name,
-        email: rawUser.email || trimmedEmail,
-        phone: rawUser.phone || phone || '',
-        role: normalizeRole(rawUser.role || normalizedRole),
-        avatar: rawUser.avatar || null,
-      };
-
-      cacheService.set(CACHE_KEYS.AUTH_USER, user);
-      cacheService.set(CACHE_KEYS.AUTH_TOKEN, token);
-      cacheService.set('token', token);
-
-      return { user, token };
+    // Fetch newly authenticated user details
+    const fetchedUser = await getCurrentUser();
+    if (fetchedUser) {
+      return { user: fetchedUser, success: true };
     }
 
-    if (lastError && lastError.message !== 'Failed to fetch') {
-      throw lastError;
-    }
+    const data = json.data || json;
+    const rawUser = data.user || json.user || data;
+
+    const user = {
+      id: rawUser._id || rawUser.id || `usr-${Date.now()}`,
+      name: rawUser.name || name,
+      email: rawUser.email || trimmedEmail,
+      phone: rawUser.phone || phone || '',
+      role: normalizeRole(rawUser.role || normalizedRole),
+      permissions: rawUser.permissions || [],
+      profileImage: rawUser.avatar || null,
+    };
+
+    cacheService.set(CACHE_KEYS.AUTH_USER, user);
+    return { user, success: true };
   } catch (err) {
     if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
       throw err;
@@ -256,38 +293,31 @@ export async function registerUser({ name, email, password, phone, role = 'Resid
     console.warn('[AuthService] Backend API not reachable for register, evaluating fallback:', err);
   }
 
-  // 2. Demo fallback
+  // Demo fallback
   const user = {
-    id: crypto.randomUUID ? crypto.randomUUID() : `usr-${Date.now()}`,
+    id: `usr-${Date.now()}`,
     name,
     email: trimmedEmail,
     phone,
     role: normalizedRole,
-    avatar: null,
+    permissions: [],
+    profileImage: null,
   };
-  const token = `demo-jwt-reg-${Date.now()}`;
 
   cacheService.set(CACHE_KEYS.AUTH_USER, user);
-  cacheService.set(CACHE_KEYS.AUTH_TOKEN, token);
-  cacheService.set('token', token);
-
-  return { user, token };
+  return { user, success: true };
 }
 
 /**
- * Log the current user out.
+ * Log the current user out by terminating backend cookie session and clearing client cache.
+ * POST /api/v1/auth/logout
  */
 export async function logoutUser() {
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-    if (token) {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    }
+    await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
   } catch (err) {
     console.warn('[AuthService] Logout API request warning:', err);
   } finally {
@@ -299,6 +329,7 @@ export async function logoutUser() {
 }
 
 export default {
+  getCurrentUser,
   loginUser,
   registerUser,
   logoutUser,

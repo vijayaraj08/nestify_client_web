@@ -8,7 +8,7 @@ import { ROLES, normalizeRole } from '../constants/roles';
  */
 export function getDefaultRouteForRole(role) {
   const normalized = normalizeRole(role);
-  
+
   switch (normalized) {
     case ROLES.SUPER_ADMIN:
       return '/admin/dashboard';
@@ -33,12 +33,12 @@ export function hasRequiredRole(userRole, allowedRoles) {
   if (!allowedRoles || (Array.isArray(allowedRoles) && allowedRoles.length === 0)) {
     return true; // No restriction
   }
-  
+
   const normalizedUserRole = normalizeRole(userRole);
   const normalizedAllowed = Array.isArray(allowedRoles)
     ? allowedRoles.map(normalizeRole)
     : [normalizeRole(allowedRoles)];
-    
+
   return normalizedAllowed.includes(normalizedUserRole);
 }
 
@@ -50,7 +50,7 @@ export function hasRequiredRole(userRole, allowedRoles) {
  */
 export function getRoleDisplayInfo(role) {
   const normalized = normalizeRole(role);
-  
+
   switch (normalized) {
     case ROLES.SUPER_ADMIN:
       return {
