@@ -19,7 +19,7 @@ import {
 } from '../components/settings';
 
 export default function Settings() {
-  const { user, role: rawRole } = useAuth();
+  const { user, role: rawRole, refreshUser } = useAuth();
   const role = normalizeRole(rawRole || user?.role);
   const tabs = getSettingsTabsForRole(role);
 
@@ -71,7 +71,10 @@ export default function Settings() {
     setSuccessMessage('');
 
     try {
-      await updateSettings(user, settings);
+      const saved = await updateSettings(user, settings);
+      if (refreshUser) {
+        refreshUser({ settings: saved });
+      }
       setSuccessMessage('Settings updated successfully!');
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err) {

@@ -1,3 +1,5 @@
+import { apiRequest } from './apiClient';
+
 const STORAGE_PLANS_KEY = 'nestify_admin_plans_data';
 
 const DEFAULT_PLANS = [
@@ -194,102 +196,122 @@ const DEFAULT_PLANS = [
   },
 ];
 
+const normalizePlan = (p) => ({
+  ...p,
+  id: p._id ? p._id.toString() : p.id,
+  _id: p._id ? p._id.toString() : p.id,
+});
+
 /**
- * Fetch all plans
+ * Fetch all plans from Database via Backend API
+ * GET /api/v1/plans
  */
-export async function getPlans() {
+export async function getPlans(options = {}) {
+  const query = options.all !== false ? '?all=true' : '';
+
   try {
-    const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
-    const response = await fetch('/api/v1/plans', {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    const response = await apiRequest(`/api/v1/plans${query}`, {
+      method: 'GET',
     });
+
     if (response.ok) {
       const json = await response.json();
-      if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-        return json.data;
+      const rawPlans = json.data?.plans || json.data || json.plans;
+      if (Array.isArray(rawPlans) && rawPlans.length > 0) {
+        const normalized = rawPlans.map(normalizePlan);
+        try {
+          localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify(normalized));
+        } catch (e) {
+          // ignore storage quota
+        }
+        return normalized;
       }
     }
   } catch (err) {
-    console.warn('Backend plans fetch fallback to local cache:', err);
+    if (err.status === 401) throw err;
+    console.warn('[PlanService] Plans fetch notice:', err.message);
   }
 
   // Local storage cache fallback
   try {
     const saved = localStorage.getItem(STORAGE_PLANS_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map(normalizePlan);
+      }
     }
   } catch (err) {
     console.warn('Could not read cached plans:', err);
   }
 
-  // Initialize with default single-property bed-count-driven plans
-  try {
-    localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify(DEFAULT_PLANS));
-  } catch (e) {
-    // Ignore storage quota error
-  }
-
-  return DEFAULT_PLANS;
+  return DEFAULT_PLANS.map(normalizePlan);
 }
 
 /**
- * Create a new plan
+ * Create a new plan in Database
+ * POST /api/v1/plans
  */
 export async function createPlan(planData) {
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
   try {
-    const response = await fetch('/api/v1/plans', {
+    const response = await apiRequest('/api/v1/plans', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: JSON.stringify(planData),
     });
 
     if (response.ok) {
       const json = await response.json();
-      if (json.data) return json.data;
+      const created = json.data?.plan || json.data || json;
+      if (created) {
+        const normalized = normalizePlan(created);
+        const currentPlans = await getPlans();
+        localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify([...currentPlans.filter(p => p.id !== normalized.id), normalized]));
+        return normalized;
+      }
     }
   } catch (err) {
-    console.warn('Backend plan creation fallback to local cache:', err);
+    if (err.status === 401) throw err;
+    console.warn('[PlanService] Plan creation notice:', err.message);
   }
 
   // Local fallback
   const plans = await getPlans();
-  const newPlan = {
+  const newPlan = normalizePlan({
     ...planData,
     id: 'plan_' + Date.now(),
     _id: 'plan_' + Date.now(),
     createdAt: new Date().toISOString(),
-  };
+  });
   const updatedPlans = [...plans, newPlan];
   localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify(updatedPlans));
   return newPlan;
 }
 
 /**
- * Update an existing plan
+ * Update an existing plan in Database
+ * PUT /api/v1/plans/:id
  */
 export async function updatePlan(id, updateData) {
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
   try {
-    const response = await fetch(`/api/v1/plans/${id}`, {
+    const response = await apiRequest(`/api/v1/plans/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: JSON.stringify(updateData),
     });
 
     if (response.ok) {
       const json = await response.json();
-      if (json.data) return json.data;
+      const updated = json.data?.plan || json.data || json;
+      if (updated) {
+        const normalized = normalizePlan(updated);
+        const currentPlans = await getPlans();
+        const nextPlans = currentPlans.map((p) => (p.id === id || p._id === id ? normalized : p));
+        localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify(nextPlans));
+        return normalized;
+      }
     }
   } catch (err) {
-    console.warn('Backend plan update fallback to local cache:', err);
+    if (err.status === 401) throw err;
+    console.warn('[PlanService] Plan update notice:', err.message);
   }
 
   // Local fallback
@@ -300,19 +322,24 @@ export async function updatePlan(id, updateData) {
 }
 
 /**
- * Delete a plan
+ * Delete a plan from Database
+ * DELETE /api/v1/plans/:id
  */
 export async function deletePlan(id) {
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
   try {
-    const response = await fetch(`/api/v1/plans/${id}`, {
+    const response = await apiRequest(`/api/v1/plans/${id}`, {
       method: 'DELETE',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
 
-    if (response.ok) return true;
+    if (response.ok) {
+      const plans = await getPlans();
+      const filtered = plans.filter((p) => p.id !== id && p._id !== id);
+      localStorage.setItem(STORAGE_PLANS_KEY, JSON.stringify(filtered));
+      return true;
+    }
   } catch (err) {
-    console.warn('Backend plan deletion fallback to local cache:', err);
+    if (err.status === 401) throw err;
+    console.warn('[PlanService] Plan deletion notice:', err.message);
   }
 
   // Local fallback

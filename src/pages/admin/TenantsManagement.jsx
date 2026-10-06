@@ -16,10 +16,12 @@ import {
   Layers,
   Bed,
   RefreshCw,
+  Edit2,
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import TenantDetailModal from '../../components/tenants/TenantDetailModal';
+import EditTenantModal from '../../components/tenants/EditTenantModal';
 import tenantService from '../../services/tenantService';
 
 export default function TenantsManagement() {
@@ -32,6 +34,8 @@ export default function TenantsManagement() {
   // Modals
   const [selectedTenant, setSelectedTenant] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [editingTenant, setEditingTenant] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Load tenants
   const fetchTenants = async () => {
@@ -61,6 +65,17 @@ export default function TenantsManagement() {
     const updated = await tenantService.updateTenantStatus(tenantId, statusData);
     if (updated) {
       setSelectedTenant(updated);
+      await fetchTenants();
+    }
+  };
+
+  // Handle Save Tenant (Edit)
+  const handleSaveTenant = async (tenantId, formData) => {
+    const updated = await tenantService.updateTenant(tenantId, formData);
+    if (updated) {
+      if (selectedTenant && selectedTenant._id === tenantId) {
+        setSelectedTenant(updated);
+      }
       await fetchTenants();
     }
   };
@@ -328,7 +343,7 @@ export default function TenantsManagement() {
                   )}
                 </div>
 
-                {/* Card Footer Metrics */}
+                {/* Card Footer Metrics & Actions */}
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-3">
                     <span>
@@ -339,10 +354,26 @@ export default function TenantsManagement() {
                     </span>
                   </div>
 
-                  <span className="text-primary-600 dark:text-primary-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    Inspect Details
-                    <ChevronRight size={14} />
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingTenant(tenant);
+                        setIsEditOpen(true);
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/50 dark:hover:text-primary-400 transition-colors flex items-center gap-1 font-medium text-xs border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      title="Edit Tenant Details"
+                    >
+                      <Edit2 size={12} />
+                      <span>Edit</span>
+                    </button>
+
+                    <span className="text-primary-600 dark:text-primary-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Inspect
+                      <ChevronRight size={14} />
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -359,6 +390,21 @@ export default function TenantsManagement() {
           setSelectedTenant(null);
         }}
         onStatusUpdate={handleStatusUpdate}
+        onEdit={(tenant) => {
+          setEditingTenant(tenant);
+          setIsEditOpen(true);
+        }}
+      />
+
+      {/* Edit Tenant Modal */}
+      <EditTenantModal
+        isOpen={isEditOpen}
+        tenant={editingTenant}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingTenant(null);
+        }}
+        onSave={handleSaveTenant}
       />
     </div>
   );

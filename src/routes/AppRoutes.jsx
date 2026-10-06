@@ -40,7 +40,7 @@ function RootRedirect() {
     return <Navigate to={getDefaultRouteForRole(role)} replace />;
   }
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/" replace />;
 }
 
 /**
@@ -64,11 +64,10 @@ function PublicLoginRoute() {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Root redirect */}
-      <Route path="/" element={<RootRedirect />} />
-
-      {/* Public Routes */}
+      {/* Public / Auth Routes */}
+      <Route path="/" element={<PublicLoginRoute />} />
       <Route path="/login" element={<PublicLoginRoute />} />
+      <Route path="/signin" element={<PublicLoginRoute />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="/design-system" element={<DesignSystemPreview />} />
 

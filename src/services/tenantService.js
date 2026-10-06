@@ -1,5 +1,6 @@
 import cacheService, { CACHE_KEYS } from './cacheService';
 import { API_BASE_URL } from './authService';
+import { apiRequest } from './apiClient';
 
 /**
  * Demo fallback tenants for testing and offline mode
@@ -142,15 +143,9 @@ const LOCAL_STORAGE_KEY = 'nestify_tenants_cache';
  * Get all tenants from backend API or local cache fallback
  */
 export async function getTenants() {
-  const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/admin/tenants`, {
+    const response = await apiRequest('/api/v1/admin/tenants', {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
     });
 
     if (response.ok) {
@@ -162,6 +157,7 @@ export async function getTenants() {
       }
     }
   } catch (err) {
+    if (err.status === 401) throw err;
     console.warn('[TenantService] Backend API not reachable, using local fallback:', err);
   }
 
@@ -183,15 +179,9 @@ export async function getTenants() {
  * Onboard a new tenant with initial hostel and auto-assigned trial license
  */
 export async function onboardTenant(payload) {
-  const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/admin/tenants/onboard`, {
+    const response = await apiRequest('/api/v1/admin/tenants/onboard', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
       body: JSON.stringify(payload),
     });
 
@@ -207,6 +197,7 @@ export async function onboardTenant(payload) {
       throw new Error(errJson.message || 'Failed to onboard tenant via API.');
     }
   } catch (err) {
+    if (err.status === 401) throw err;
     console.warn('[TenantService] Falling back to local tenant creation:', err);
 
     // Create local demo tenant with 14-day trial
@@ -286,15 +277,9 @@ export async function onboardTenant(payload) {
  * Update tenant KYC / approval status
  */
 export async function updateTenantStatus(tenantId, statusData) {
-  const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token');
-
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/admin/tenants/${tenantId}/status`, {
+    const response = await apiRequest(`/api/v1/admin/tenants/${tenantId}/status`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
       body: JSON.stringify(statusData),
     });
 
@@ -303,6 +288,7 @@ export async function updateTenantStatus(tenantId, statusData) {
       return json.data || json;
     }
   } catch (err) {
+    if (err.status === 401) throw err;
     console.warn('[TenantService] Status update fallback:', err);
   }
 
@@ -328,6 +314,59 @@ export async function updateTenantStatus(tenantId, statusData) {
 }
 
 /**
+ * Update Full Tenant Information (Business, Contact, KYC, Primary Hostel)
+ * PUT /api/v1/admin/tenants/:id
+ */
+export async function updateTenant(tenantId, updateData) {
+  try {
+    const response = await apiRequest(`/api/v1/admin/tenants/${tenantId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      const updatedTenant = json.data || json;
+      if (updatedTenant) {
+        // Update local cache
+        const current = await getTenants();
+        const nextList = current.map((t) => (t._id === tenantId ? { ...t, ...updatedTenant } : t));
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextList));
+        return updatedTenant;
+      }
+    }
+  } catch (err) {
+    if (err.status === 401) throw err;
+    console.warn('[TenantService] Update tenant notice:', err.message);
+  }
+
+  // Local fallback
+  const current = await getTenants();
+  const nextList = current.map((t) => {
+    if (t._id === tenantId) {
+      return {
+        ...t,
+        name: updateData.name || t.name,
+        phone: updateData.phone || t.phone,
+        bio: updateData.bio !== undefined ? updateData.bio : t.bio,
+        status: updateData.status || t.status,
+        ownerProfile: {
+          ...t.ownerProfile,
+          businessName: updateData.businessName || t.ownerProfile?.businessName,
+          panNumber: updateData.panNumber || t.ownerProfile?.panNumber,
+          gstin: updateData.gstin || t.ownerProfile?.gstin,
+          approvalStatus: updateData.approvalStatus || t.ownerProfile?.approvalStatus,
+        },
+      };
+    }
+    return t;
+  });
+
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextList));
+  return nextList.find((t) => t._id === tenantId);
+}
+
+/**
  * Get all rooms with Bed Occupancy for a specific Hostel
  */
 export async function getHostelRooms(hostelId) {
@@ -340,6 +379,7 @@ export async function getHostelRooms(hostelId) {
         'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : '',
       },
+      credentials: 'include',
     });
 
     if (response.ok) {
@@ -366,6 +406,7 @@ export async function updateBedOccupancy(hostelId, roomId, bedNumber, updateData
         'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : '',
       },
+      credentials: 'include',
       body: JSON.stringify(updateData),
     });
 
@@ -383,6 +424,7 @@ export async function updateBedOccupancy(hostelId, roomId, bedNumber, updateData
 export default {
   getTenants,
   onboardTenant,
+  updateTenant,
   updateTenantStatus,
   getHostelRooms,
   updateBedOccupancy,

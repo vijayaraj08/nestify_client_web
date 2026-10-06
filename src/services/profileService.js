@@ -1,7 +1,6 @@
 import { ROLES, normalizeRole } from '../constants/roles';
 import cacheService, { CACHE_KEYS } from './cacheService';
-
-import { API_BASE_URL } from './authService';
+import { apiRequest } from './apiClient';
 
 /**
  * Returns strictly role-based default profile data.
@@ -170,33 +169,27 @@ export async function getProfile(user) {
   const role = normalizeRole(user?.role || ROLES.END_USER);
 
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token') || cacheService.get('accessToken');
-    if (token) {
-      const response = await fetch(`${API_BASE_URL}/api/v1/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-      });
+    const response = await apiRequest('/api/v1/profile', {
+      method: 'GET',
+    });
 
-      if (response.ok) {
-        const json = await response.json();
-        const apiData = json.data || json;
+    if (response.ok) {
+      const json = await response.json();
+      const apiData = json.data || json;
 
-        if (apiData) {
-          const nameParts = (apiData.name || '').trim().split(' ');
-          const result = {
-            ...apiData,
-            firstName: apiData.firstName || nameParts[0] || '',
-            lastName: apiData.lastName || nameParts.slice(1).join(' ') || '',
-            profilePhoto: apiData.avatar || apiData.profilePhoto,
-          };
+      if (apiData) {
+        const nameParts = (apiData.name || '').trim().split(' ');
+        const result = {
+          ...apiData,
+          firstName: apiData.firstName || nameParts[0] || '',
+          lastName: apiData.lastName || nameParts.slice(1).join(' ') || '',
+          profilePhoto: apiData.avatar || apiData.profilePhoto,
+        };
 
-          // Sanitize to ensure no irrelevant profile objects are returned
-          const cleanResult = sanitizeProfileForRole(role, result);
-          cacheService.setUserProfile(user?.email, cleanResult);
-          return cleanResult;
-        }
+        // Sanitize to ensure no irrelevant profile objects are returned
+        const cleanResult = sanitizeProfileForRole(role, result);
+        cacheService.setUserProfile(user?.email, cleanResult);
+        return cleanResult;
       }
     }
   } catch (err) {
@@ -230,32 +223,24 @@ export async function updateProfile(user, updatedData) {
 
   // 2. Persist to API
   try {
-    const token = cacheService.get(CACHE_KEYS.AUTH_TOKEN) || cacheService.get('token') || cacheService.get('accessToken');
-    if (token) {
-      const response = await fetch(`${API_BASE_URL}/api/v1/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+    const response = await apiRequest('/api/v1/profile', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
 
-      if (response.ok) {
-        const json = await response.json();
-        const apiData = json.data || json;
-        if (apiData) {
-          const result = {
-            ...apiData,
-            firstName: updatedData.firstName,
-            lastName: updatedData.lastName,
-            profilePhoto: apiData.avatar || updatedData.profilePhoto,
-          };
-          const cleanResult = sanitizeProfileForRole(role, result);
-          cacheService.setUserProfile(user?.email, cleanResult);
-          return cleanResult;
-        }
+    if (response.ok) {
+      const json = await response.json();
+      const apiData = json.data || json;
+      if (apiData) {
+        const result = {
+          ...apiData,
+          firstName: updatedData.firstName,
+          lastName: updatedData.lastName,
+          profilePhoto: apiData.avatar || updatedData.profilePhoto,
+        };
+        const cleanResult = sanitizeProfileForRole(role, result);
+        cacheService.setUserProfile(user?.email, cleanResult);
+        return cleanResult;
       }
     }
   } catch (err) {
