@@ -2,145 +2,10 @@ import cacheService, { CACHE_KEYS } from './cacheService';
 import { API_BASE_URL } from './authService';
 import { apiRequest } from './apiClient';
 
-/**
- * Demo fallback tenants for testing and offline mode
- */
-const DEMO_TENANTS = [
-  {
-    _id: 'tnt_demo_001',
-    name: 'Sarah Jenkins',
-    email: 'tenant@hostello.com',
-    phone: '+91 98765 12340',
-    role: 'TENANT',
-    status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    bio: 'Operations Lead at Grand Oak Living Suites.',
-    ownerProfile: {
-      businessName: 'Grand Oak Living Suites',
-      businessType: 'proprietorship',
-      panNumber: 'AAAPL1234C',
-      gstin: '29AAAPL1234C1Z5',
-      approvalStatus: 'approved',
-      licenseStatus: 'trial',
-      activeLicenseId: {
-        _id: 'lic_demo_001',
-        licenseKey: 'TRIAL-8F2A-99B1',
-        planName: 'Nestify Starter Trial',
-        status: 'trial',
-        isTrial: true,
-        trialDays: 14,
-        startDate: Date.now() - 3 * 86400000,
-        expiresAt: Date.now() + 11 * 86400000,
-        limits: { maxProperties: 1, maxBeds: 50, maxStaffMembers: 5 },
-      },
-    },
-    hostels: [
-      {
-        _id: 'hst_demo_001',
-        name: 'Grand Oak Executive Hostel',
-        hostelType: 'co_living',
-        address: { city: 'Bangalore', state: 'Karnataka', street: 'Koramangala 4th Block' },
-        rules: { curfewTimeMs: 81000000, noticePeriodDays: 30 },
-        stats: { totalFloors: 4, totalRooms: 20, totalBeds: 60, occupiedBeds: 48 },
-        status: 'active',
-      },
-    ],
-    hostelCount: 1,
-    stats: { totalBeds: 60, totalRooms: 20, occupiedBeds: 48, occupancyRate: 80 },
-    createdAt: Date.now() - 30 * 86400000,
-  },
-  {
-    _id: 'tnt_demo_002',
-    name: 'David Miller',
-    email: 'david.miller@horizonstays.in',
-    phone: '+91 98111 22334',
-    role: 'TENANT',
-    status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-    bio: 'Founder & CEO at Horizon Heights Co-living.',
-    ownerProfile: {
-      businessName: 'Horizon Hospitality LLP',
-      businessType: 'llp',
-      panNumber: 'AABCH5678D',
-      gstin: '36AABCH5678D1Z8',
-      approvalStatus: 'approved',
-      licenseStatus: 'trial',
-      activeLicenseId: {
-        _id: 'lic_demo_002',
-        licenseKey: 'TRIAL-1C4E-77D2',
-        planName: 'Nestify Starter Trial',
-        status: 'trial',
-        isTrial: true,
-        trialDays: 14,
-        startDate: Date.now() - 1 * 86400000,
-        expiresAt: Date.now() + 13 * 86400000,
-        limits: { maxProperties: 2, maxBeds: 120, maxStaffMembers: 10 },
-      },
-    },
-    hostels: [
-      {
-        _id: 'hst_demo_002',
-        name: 'Horizon Heights Luxury PG',
-        hostelType: 'boys',
-        address: { city: 'Hyderabad', state: 'Telangana', street: 'Hitec City Phase 2' },
-        rules: { curfewTimeMs: 82800000, noticePeriodDays: 30 },
-        stats: { totalFloors: 5, totalRooms: 35, totalBeds: 105, occupiedBeds: 82 },
-        status: 'active',
-      },
-    ],
-    hostelCount: 1,
-    stats: { totalBeds: 105, totalRooms: 35, occupiedBeds: 82, occupancyRate: 78 },
-    createdAt: Date.now() - 15 * 86400000,
-  },
-  {
-    _id: 'tnt_demo_003',
-    name: 'Elena Rostova',
-    email: 'elena@apexsuites.com',
-    phone: '+91 97777 88990',
-    role: 'TENANT',
-    status: 'pending_approval',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    bio: 'Apex Student Living Spaces.',
-    ownerProfile: {
-      businessName: 'Apex Student Living',
-      businessType: 'private_limited',
-      panNumber: 'AABCA9012E',
-      gstin: '27AABCA9012E1Z2',
-      approvalStatus: 'pending',
-      licenseStatus: 'trial',
-      activeLicenseId: {
-        _id: 'lic_demo_003',
-        licenseKey: 'TRIAL-99AA-33FF',
-        planName: 'Nestify Starter Trial',
-        status: 'trial',
-        isTrial: true,
-        trialDays: 14,
-        startDate: Date.now(),
-        expiresAt: Date.now() + 14 * 86400000,
-        limits: { maxProperties: 1, maxBeds: 80, maxStaffMembers: 6 },
-      },
-    },
-    hostels: [
-      {
-        _id: 'hst_demo_003',
-        name: 'Apex Girls Campus Stay',
-        hostelType: 'girls',
-        address: { city: 'Pune', state: 'Maharashtra', street: 'Viman Nagar' },
-        rules: { curfewTimeMs: 77400000, noticePeriodDays: 30 },
-        stats: { totalFloors: 3, totalRooms: 24, totalBeds: 72, occupiedBeds: 0 },
-        status: 'pending_approval',
-      },
-    ],
-    hostelCount: 1,
-    stats: { totalBeds: 72, totalRooms: 24, occupiedBeds: 0, occupancyRate: 0 },
-    createdAt: Date.now() - 2 * 86400000,
-  },
-];
-
 const LOCAL_STORAGE_KEY = 'nestify_tenants_cache';
 
 /**
- * Get all tenants from backend API or local cache fallback
+ * Get all tenants from backend API or local cache
  */
 export async function getTenants() {
   try {
@@ -150,29 +15,29 @@ export async function getTenants() {
 
     if (response.ok) {
       const json = await response.json();
-      const list = json.data || json;
-      if (Array.isArray(list) && list.length > 0) {
+      const list = json.data?.tenants || json.data || json;
+      if (Array.isArray(list)) {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
         return list;
       }
     }
   } catch (err) {
     if (err.status === 401) throw err;
-    console.warn('[TenantService] Backend API not reachable, using local fallback:', err);
+    console.warn('[TenantService] Backend API not reachable for tenants:', err);
   }
 
-  // Fallback to local storage or demo tenants
+  // Fallback to local storage if available, otherwise empty list
   const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (cached) {
     try {
-      return JSON.parse(cached);
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed)) return parsed;
     } catch {
       // ignore parse error
     }
   }
 
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEMO_TENANTS));
-  return DEMO_TENANTS;
+  return [];
 }
 
 /**
@@ -200,7 +65,7 @@ export async function onboardTenant(payload) {
     if (err.status === 401) throw err;
     console.warn('[TenantService] Falling back to local tenant creation:', err);
 
-    // Create local demo tenant with 14-day trial
+    // Create local record for instant UI responsiveness
     const nowMs = Date.now();
     const trialDays = payload.trialDays || 14;
     const expiresAt = nowMs + trialDays * 86400000;
@@ -210,13 +75,13 @@ export async function onboardTenant(payload) {
       _id: `tnt_${Date.now()}`,
       name: payload.name,
       email: payload.email,
-      phone: payload.phone || '+91 99999 00000',
+      phone: payload.phone || '',
       role: 'TENANT',
       status: 'active',
-      avatar: payload.avatar || 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-      bio: `Owner & Operator of ${payload.businessName}.`,
+      avatar: payload.avatar || null,
+      bio: `Owner & Operator of ${payload.businessName || payload.hostelName}.`,
       ownerProfile: {
-        businessName: payload.businessName,
+        businessName: payload.businessName || payload.hostelName,
         businessType: payload.businessType || 'individual',
         panNumber: payload.panNumber ? payload.panNumber.toUpperCase() : '',
         gstin: payload.gstin ? payload.gstin.toUpperCase() : '',
@@ -231,7 +96,7 @@ export async function onboardTenant(payload) {
           trialDays,
           startDate: nowMs,
           expiresAt,
-          limits: { maxProperties: 1, maxBeds: payload.stats?.totalBeds || 50, maxStaffMembers: 5 },
+          limits: { maxProperties: 1, maxBeds: 50, maxStaffMembers: 5 },
         },
       },
       hostels: [
@@ -239,7 +104,7 @@ export async function onboardTenant(payload) {
           _id: `hst_${Date.now()}`,
           name: payload.hostelName,
           hostelType: payload.hostelType || 'co_living',
-          address: payload.address || { city: 'Bangalore', state: 'Karnataka', street: 'Main Road' },
+          address: payload.address || { city: 'Bangalore', state: 'Karnataka', street: '' },
           rules: {
             curfewTimeMs: payload.rules?.curfewTimeMs || 81000000,
             noticePeriodDays: payload.rules?.noticePeriodDays || 30,
@@ -428,5 +293,4 @@ export default {
   updateTenantStatus,
   getHostelRooms,
   updateBedOccupancy,
-  DEMO_TENANTS,
 };

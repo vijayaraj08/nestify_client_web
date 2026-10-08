@@ -33,8 +33,9 @@ import { timeStringToMs, msToTimeString } from '../../utils/timeUtils';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import tenantService from '../../services/tenantService';
+import { generateArchitecturalLayout } from '../../utils/roomLayoutEngine';
 
-// Default initial room generator helper
+// Default initial room generator helper matching full schema
 const generateDefaultRooms = (floorNum, count = 5, defaultSharing = 2) => {
   const rooms = [];
   for (let i = 1; i <= count; i++) {
@@ -44,14 +45,43 @@ const generateDefaultRooms = (floorNum, count = 5, defaultSharing = 2) => {
     else if (defaultSharing === 3) roomType = 'triple';
     else if (defaultSharing === 4) roomType = 'four_sharing';
 
+    const hasAc = i % 2 === 1;
+    const facilities = {
+      hasAc,
+      hasTv: true,
+      hasAttachedWashroom: true,
+      hasBalcony: false,
+      hasWindow: true,
+      hasCupboard: true,
+      hasStudyTable: false,
+      hasGeyser: true,
+      hasWifi: true,
+    };
+
+    const beds = Array.from({ length: defaultSharing }, (_, bIdx) => ({
+      bedNumber: `${roomNumStr}-${String.fromCharCode(65 + bIdx)}`,
+      isOccupied: false,
+      status: 'available',
+      monthlyRent: 8500,
+    }));
+
+    const layout = generateArchitecturalLayout({
+      roomNumber: roomNumStr,
+      capacity: defaultSharing,
+      facilities,
+    });
+
     rooms.push({
       id: `rm_${floorNum}_${i}_${Date.now()}`,
       roomNumber: roomNumStr,
       roomType,
       capacity: defaultSharing,
-      hasAc: i % 2 === 1,
+      facilities,
+      hasAc,
       washroomType: 'attached',
       monthlyRent: 8500,
+      beds,
+      layout,
     });
   }
   return rooms;
@@ -192,14 +222,42 @@ export default function TenantOnboardingPage() {
       const nextIndex = currentRooms.length + 1;
       const roomNumber = `${targetFloor.floorNumber}${nextIndex < 10 ? '0' + nextIndex : nextIndex}`;
 
+      const facilities = {
+        hasAc: false,
+        hasTv: true,
+        hasAttachedWashroom: true,
+        hasBalcony: false,
+        hasWindow: true,
+        hasCupboard: true,
+        hasStudyTable: false,
+        hasGeyser: true,
+        hasWifi: true,
+      };
+
+      const beds = Array.from({ length: 2 }, (_, bIdx) => ({
+        bedNumber: `${roomNumber}-${String.fromCharCode(65 + bIdx)}`,
+        isOccupied: false,
+        status: 'available',
+        monthlyRent: 8000,
+      }));
+
+      const layout = generateArchitecturalLayout({
+        roomNumber,
+        capacity: 2,
+        facilities,
+      });
+
       const newRoom = {
         id: `rm_${Date.now()}`,
         roomNumber,
         roomType: 'double',
         capacity: 2,
+        facilities,
         hasAc: false,
         washroomType: 'attached',
         monthlyRent: 8000,
+        beds,
+        layout,
       };
 
       targetFloor.rooms = [...currentRooms, newRoom];
@@ -223,8 +281,9 @@ export default function TenantOnboardingPage() {
       const updatedFloors = [...prev.floors];
       const targetFloor = { ...updatedFloors[floorIndex] };
       const updatedRooms = [...targetFloor.rooms];
+      const targetRoom = updatedRooms[roomIndex];
 
-      let capacity = updatedRooms[roomIndex].capacity;
+      let capacity = targetRoom.capacity;
       if (field === 'roomType') {
         if (value === 'single') capacity = 1;
         else if (value === 'double') capacity = 2;
@@ -236,10 +295,37 @@ export default function TenantOnboardingPage() {
         capacity = Number(value) || 1;
       }
 
+      const facilities = {
+        ...(targetRoom.facilities || {
+          hasTv: true,
+          hasAttachedWashroom: true,
+          hasWindow: true,
+          hasCupboard: true,
+          hasStudyTable: false,
+        }),
+        hasAc: field === 'hasAc' ? Boolean(value) : targetRoom.hasAc,
+      };
+
+      const beds = Array.from({ length: capacity }, (_, bIdx) => ({
+        bedNumber: `${targetRoom.roomNumber}-${String.fromCharCode(65 + bIdx)}`,
+        isOccupied: false,
+        status: 'available',
+        monthlyRent: targetRoom.monthlyRent || 8000,
+      }));
+
+      const layout = generateArchitecturalLayout({
+        roomNumber: targetRoom.roomNumber,
+        capacity,
+        facilities,
+      });
+
       updatedRooms[roomIndex] = {
-        ...updatedRooms[roomIndex],
+        ...targetRoom,
         [field]: value,
         capacity,
+        facilities,
+        beds,
+        layout,
       };
 
       targetFloor.rooms = updatedRooms;
