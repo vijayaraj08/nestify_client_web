@@ -18,6 +18,8 @@ import PlansManagement from '../pages/admin/PlansManagement';
 import AnalyticsReports from '../pages/admin/AnalyticsReports';
 import TenantsManagement from '../pages/admin/TenantsManagement';
 import TenantOnboardingPage from '../pages/admin/TenantOnboardingPage';
+import PropertiesUnitsPage from '../pages/admin/PropertiesUnitsPage';
+import PropertyDetailsPage from '../pages/admin/PropertyDetailsPage';
 
 /**
  * Root Redirection Handler for '/'
@@ -110,7 +112,8 @@ export default function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="tenants" element={<TenantsManagement />} />
         <Route path="tenants/new" element={<TenantOnboardingPage />} />
-        <Route path="properties" element={<GenericPage title="Properties & Units" />} />
+        <Route path="properties" element={<PropertiesUnitsPage />} />
+        <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
         <Route path="bookings" element={<GenericPage title="Platform Bookings" />} />
         <Route path="move-outs" element={<GenericPage title="Move-Out Requests" />} />
         <Route path="residents" element={<GenericPage title="All Residents" />} />
@@ -142,9 +145,12 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="/tenant/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="properties" element={<GenericPage title="Hostel Properties" />} />
-        <Route path="rooms" element={<GenericPage title="Rooms & Layout" />} />
-        <Route path="beds" element={<GenericPage title="Bed Matrix & Allocations" />} />
+        <Route path="properties" element={<PropertiesUnitsPage />} />
+        <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
+        <Route path="rooms" element={<PropertiesUnitsPage />} />
+        <Route path="rooms/:propertyId" element={<PropertyDetailsPage />} />
+        <Route path="beds" element={<PropertiesUnitsPage />} />
+        <Route path="beds/:propertyId" element={<PropertyDetailsPage />} />
         <Route path="bookings" element={<GenericPage title="Resident Bookings" />} />
         <Route path="residents" element={<GenericPage title="Resident Roster" />} />
         <Route path="payments" element={<GenericPage title="Payments & Invoices" />} />
